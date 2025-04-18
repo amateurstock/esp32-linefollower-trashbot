@@ -2,8 +2,9 @@
 
 void setup() {
     Serial.begin(115200);
+    init_pins();
     init_serial();
-    init_tasks();
+    ESP_ERROR_CHECK(init_tasks());
 }
 
 void loop() {

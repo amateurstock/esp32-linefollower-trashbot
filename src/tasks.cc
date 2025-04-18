@@ -1,21 +1,43 @@
 #include "tasks.hh"
 
+// RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
 TaskHandle_t update_motors_t = NULL;
 TaskHandle_t get_distances_t = NULL;
+TaskHandle_t get_analogs_t = NULL;
 
+// Function TAGs
 const char *read_line_sensors_tag = "read_line_sensors";
 const char *update_motors_tag = "update_motors";
 const char *get_distances_tag = "get_distances";
+const char *get_analogs_tag = "get analogs";
 
+// OOP constructors
 HardwareSerial uno_serial(2);
+NewPing distance_1(SHARED_TRIG, ECHO_1, 100);
+NewPing distance_2(SHARED_TRIG, ECHO_2, 100);
+NewPing distance_3(SHARED_TRIG, ECHO_3, 100);
+
+// Typedefs
+state_t state {
+    .line_state = 0b000,
+    .distance_1 = 0,
+    .distance_2 = 0,
+    .distance_3 = 0,
+    .weight_out = 0,
+    .VB_out = 0
+};
+
+
+
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // RTOS related +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void init_tasks() {
+esp_err_t init_tasks() {
     const char *TAG = "init_tasks";
     user_logger(TAG, (char *)"Attempting to init tasks.");
+    esp_err_t ret = ESP_OK;
 
     user_logger(TAG, (char *)"Initializing read_line_sensors.");
     xTaskCreate(
@@ -28,6 +50,7 @@ void init_tasks() {
     );
     if (read_line_sensors_t == NULL) {
         user_logger(read_line_sensors_tag, (char *)"Failed to create task...");
+        ret = ESP_FAIL;
     }
 
     user_logger(TAG, (char *)"Initializing update_motors.");
@@ -41,21 +64,54 @@ void init_tasks() {
     );
     if (update_motors_t == NULL) {
         user_logger(update_motors_tag, (char *)"Failed to create task...");
+        ret = ESP_FAIL;
     }
 
+    user_logger(TAG, (char *)"Initializing get_distances.");
+    xTaskCreate(
+        get_distances,
+        "get_distances task",
+        4096,
+        NULL,
+        10,
+        &get_distances_t
+    );
+    if (get_distances_t == NULL) {
+        user_logger(get_distances_tag, (char *)"Failed to create task...");
+        ret = ESP_FAIL;
+    }
+
+    return ret;
 }
 
 void read_line_sensors(void *params) {
-
+    
 }
 
 void update_motors(void *params) {
-
+    uno_serial.println("ha gottem");
 }
 
 void get_distances(void *params) {
 
+    state.distance_1 = distance_1.ping_cm();
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+    state.distance_2 = distance_2.ping_cm();
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+    state.distance_3 = distance_3.ping_cm();
+    vTaskDelay(pdMS_TO_TICKS(50));
+
 }
+
+void get_analogs(void *params) {
+    state.VB_out = analogRead(VB_PIN);
+    state.weight_out = analogRead(WEIGHT_PIN);
+    vTaskDelay(pdMS_TO_TICKS(50));
+}
+
+
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -84,6 +140,9 @@ void init_pins() {
     analogWrite(ARM_2, 0);
     analogWrite(ARM_3, 0);
     analogWrite(ARM_4, 0);
+
+    // Note, there's no such thing as a pinMode for ADC pins. Just call
+    // analogRead() somewhere and the esp32 automatically knows what's up.
 }
 
 void user_logger(const char *TAG, char *message) {
@@ -91,4 +150,3 @@ void user_logger(const char *TAG, char *message) {
     sprintf(buf, "%s: %s\n", TAG, message);
     Serial.print(buf);
 }
-
