@@ -3,12 +3,11 @@
 
 TaskHandle_t read_sensors_t = NULL;
 TaskHandle_t update_motors_t = NULL;
-L298N leftMotors(25, 26, 27);
-L298N rightMotors(4, 16, 17);
 
 const char *read_sensors_tag = "read_sensors";
 const char *update_motors_tag = "update_motors ";
-const char *foo = "read_sensors";
+
+HardwareSerial uno_serial(2);
 
 void init_tasks() {
     const char *TAG = "init_tasks";
@@ -40,6 +39,10 @@ void init_tasks() {
         user_logger(update_motors_tag, (char *)"Failed to create task...");
     }
 
+}
+
+void init_serial() {
+    uno_serial.begin(9600);
 }
 
 void user_logger(const char *TAG, char *message) {
