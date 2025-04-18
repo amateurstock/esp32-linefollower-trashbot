@@ -2,13 +2,13 @@
 
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
-TaskHandle_t update_motors_t = NULL;
+TaskHandle_t update_uno_t = NULL;
 TaskHandle_t get_distances_t = NULL;
 TaskHandle_t get_analogs_t = NULL;
 
 // Function TAGs
 const char *read_line_sensors_tag = "read_line_sensors";
-const char *update_motors_tag = "update_motors";
+const char *update_uno_tag = "update_uno";
 const char *get_distances_tag = "get_distances";
 const char *get_analogs_tag = "get analogs";
 
@@ -26,6 +26,11 @@ state_t state {
     .distance_3 = 0,
     .weight_out = 0,
     .VB_out = 0
+};
+
+motors_t motors {
+    .left_motors = 0,
+    .right_motors = 0
 };
 
 
@@ -53,17 +58,17 @@ esp_err_t init_tasks() {
         ret = ESP_FAIL;
     }
 
-    user_logger(TAG, (char *)"Initializing update_motors.");
+    user_logger(TAG, (char *)"Initializing update_uno.");
     xTaskCreate(
-        update_motors,
-        "update_motors task",
+        update_uno,
+        "update_uno task",
         4096,
         NULL,
         10,
-        &update_motors_t
+        &update_uno_t
     );
-    if (update_motors_t == NULL) {
-        user_logger(update_motors_tag, (char *)"Failed to create task...");
+    if (update_uno_t == NULL) {
+        user_logger(update_uno_tag, (char *)"Failed to create task...");
         ret = ESP_FAIL;
     }
 
@@ -81,28 +86,38 @@ esp_err_t init_tasks() {
         ret = ESP_FAIL;
     }
 
+    user_logger(TAG, (char *)"Initializing get_analogs.");
+    xTaskCreate(
+        get_analogs,
+        "get_analogs task",
+        4096,
+        NULL,
+        10,
+        &get_analogs_t
+    );
+    if (get_analogs_t == NULL) {
+        user_logger(get_analogs_tag, (char *)"Failed to create task...");
+        ret = ESP_FAIL;
+    }
+
     return ret;
 }
 
 void read_line_sensors(void *params) {
-    
+    vTaskDelay(pdMS_TO_TICKS(10));
 }
 
-void update_motors(void *params) {
-    uno_serial.println("ha gottem");
+void update_uno(void *params) {
+    vTaskDelay(pdMS_TO_TICKS(10));
 }
 
 void get_distances(void *params) {
-
     state.distance_1 = distance_1.ping_cm();
     vTaskDelay(pdMS_TO_TICKS(50));
-
     state.distance_2 = distance_2.ping_cm();
     vTaskDelay(pdMS_TO_TICKS(50));
-
     state.distance_3 = distance_3.ping_cm();
     vTaskDelay(pdMS_TO_TICKS(50));
-
 }
 
 void get_analogs(void *params) {
