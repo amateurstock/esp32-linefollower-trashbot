@@ -3,6 +3,8 @@
 #include "freertos/task.h"
 #include "NewPing.h"
 
+#define PRINTDB
+
 // RTOS related
 esp_err_t init_tasks();
 void read_line_sensors(void *params);

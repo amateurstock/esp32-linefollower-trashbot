@@ -104,26 +104,52 @@ esp_err_t init_tasks() {
 }
 
 void read_line_sensors(void *params) {
-    vTaskDelay(pdMS_TO_TICKS(10));
+    for (;;) {
+        uint8_t b0 = digitalRead(LINE_1);
+        uint8_t b1 = digitalRead(LINE_2) << 1;
+        uint8_t b2 = digitalRead(LINE_3) << 2;
+        uint8_t b3 = digitalRead(LINE_4) << 3;
+        state.line_state = state.line_state | b0 | b1 | b2 | b3;
+
+#ifdef PRINTDB
+        Serial.printf("line_state = %d\n", state.line_state);
+#endif
+
+        vTaskDelay(pdMS_TO_TICKS(8));
+    }
 }
 
 void update_uno(void *params) {
-    vTaskDelay(pdMS_TO_TICKS(10));
+    user_logger(update_uno_tag, (char *)"2 seconds waiting for everything to settle down.");
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    for (;;) {
+        vTaskDelay(pdMS_TO_TICKS(8));
+    }
 }
 
 void get_distances(void *params) {
-    state.distance_1 = distance_1.ping_cm();
-    vTaskDelay(pdMS_TO_TICKS(50));
-    state.distance_2 = distance_2.ping_cm();
-    vTaskDelay(pdMS_TO_TICKS(50));
-    state.distance_3 = distance_3.ping_cm();
-    vTaskDelay(pdMS_TO_TICKS(50));
+    for (;;) {
+        state.distance_1 = distance_1.ping_cm();
+        vTaskDelay(pdMS_TO_TICKS(50));
+        state.distance_2 = distance_2.ping_cm();
+        vTaskDelay(pdMS_TO_TICKS(50));
+        state.distance_3 = distance_3.ping_cm();
+        vTaskDelay(pdMS_TO_TICKS(50));
+
+#ifdef PRINTDB
+        Serial.printf("distance_1 = %d\n", state.distance_1);
+        Serial.printf("distance_2 = %d\n", state.distance_2);
+        Serial.printf("distance_3 = %d\n", state.distance_3);
+#endif
+    }
 }
 
 void get_analogs(void *params) {
-    state.VB_out = analogRead(VB_PIN);
-    state.weight_out = analogRead(WEIGHT_PIN);
-    vTaskDelay(pdMS_TO_TICKS(50));
+    for (;;) {
+        state.VB_out = analogRead(VB_PIN);
+        state.weight_out = analogRead(WEIGHT_PIN);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
 
 
@@ -150,7 +176,6 @@ void init_pins() {
     pinMode(ARM_2, OUTPUT);
     pinMode(ARM_3, OUTPUT);
     pinMode(ARM_4, OUTPUT);
-
     analogWrite(ARM_1, 0);
     analogWrite(ARM_2, 0);
     analogWrite(ARM_3, 0);
@@ -158,6 +183,8 @@ void init_pins() {
 
     // Note, there's no such thing as a pinMode for ADC pins. Just call
     // analogRead() somewhere and the esp32 automatically knows what's up.
+    // Also, the NewPing constructors setup the pins necessary for the
+    // ultrasonic sensors.
 }
 
 void user_logger(const char *TAG, char *message) {
