@@ -11,6 +11,7 @@ void setup() {
     ESP_ERROR_CHECK(mount_spiffs(root_dir));
     init_serial();
     ESP_ERROR_CHECK(init_tasks());
+    ESP_ERROR_CHECK(start_server());
 }
 
 void loop() {

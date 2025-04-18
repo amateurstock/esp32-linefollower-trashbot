@@ -7,3 +7,4 @@ esp_err_t serve_files(
     const char *path,
     const char *type
 );
+esp_err_t parse_get(httpd_req_t *req, char **obuf);

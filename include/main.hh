@@ -21,6 +21,7 @@ void init_pins();
 void user_logger(const char *TAG, char *message);
 void user_logger(const char *TAG, const char *message);
 esp_err_t mount_spiffs(const char *base_path);
+esp_err_t start_server();
 
 // Typedefs
 typedef struct {

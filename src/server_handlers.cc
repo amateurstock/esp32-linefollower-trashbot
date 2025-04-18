@@ -4,6 +4,7 @@
 extern const char *root_dir;
 extern const char *html_path;
 extern const char *js_path;
+extern state_t state;
 
 esp_err_t index_handler(httpd_req_t *req) {
     const char *TAG = "index_handler";
@@ -53,7 +54,7 @@ esp_err_t serve_files(
         return ESP_ERR_NOT_FOUND;
     }
 
-    user_logger(TAG, (char *)"Attempting to send file");
+    user_logger(TAG, "Attempting to send file");
     char buf[256] = {0};
     while (fgets(buf, sizeof(buf) - 1, file)) {
         httpd_resp_send_chunk(req, buf, strlen(buf));
@@ -66,6 +67,30 @@ esp_err_t serve_files(
     }
 
     fclose(file);
-    user_logger(TAG, (char *)"File closed successfully!");
+    user_logger(TAG, "File closed successfully!");
     return ESP_OK;
+}
+
+esp_err_t parse_get(httpd_req_t *req, char **obuf) {
+    char *buf = NULL;
+    size_t buf_len = 0;
+
+    buf_len = httpd_req_get_url_query_len(req) + 1;
+
+    if (buf_len > 1) {
+        buf = (char *)malloc(buf_len);
+
+        if (!buf) {
+            httpd_resp_send_500(req);
+            return ESP_FAIL;
+        }
+
+        if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
+            *obuf = buf;
+            return ESP_OK;
+        }
+        free(buf);
+    }
+    httpd_resp_send_404(req);
+    return ESP_FAIL;
 }
