@@ -1,4 +1,4 @@
-#include "tasks.hh"
+#include "main.hh"
 
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
@@ -20,7 +20,7 @@ NewPing distance_3(SHARED_TRIG, ECHO_3, 100);
 
 // Typedefs
 state_t state {
-    .line_state = 0b000,
+    .line_state = 0b0000,
     .distance_1 = 0,
     .distance_2 = 0,
     .distance_3 = 0,
@@ -39,12 +39,13 @@ motors_t motors {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // RTOS related +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 esp_err_t init_tasks() {
     const char *TAG = "init_tasks";
-    user_logger(TAG, (char *)"Attempting to init tasks.");
+    user_logger(TAG, "Attempting to init tasks.");
     esp_err_t ret = ESP_OK;
 
-    user_logger(TAG, (char *)"Initializing read_line_sensors.");
+    user_logger(TAG, "Initializing read_line_sensors.");
     xTaskCreate(
         read_line_sensors,
         "read_line_sensors task",
@@ -54,11 +55,11 @@ esp_err_t init_tasks() {
         &read_line_sensors_t
     );
     if (read_line_sensors_t == NULL) {
-        user_logger(read_line_sensors_tag, (char *)"Failed to create task...");
+        user_logger(read_line_sensors_tag, "Failed to create task...");
         ret = ESP_FAIL;
     }
 
-    user_logger(TAG, (char *)"Initializing update_uno.");
+    user_logger(TAG, "Initializing update_uno.");
     xTaskCreate(
         update_uno,
         "update_uno task",
@@ -68,11 +69,11 @@ esp_err_t init_tasks() {
         &update_uno_t
     );
     if (update_uno_t == NULL) {
-        user_logger(update_uno_tag, (char *)"Failed to create task...");
+        user_logger(update_uno_tag, "Failed to create task...");
         ret = ESP_FAIL;
     }
 
-    user_logger(TAG, (char *)"Initializing get_distances.");
+    user_logger(TAG, "Initializing get_distances.");
     xTaskCreate(
         get_distances,
         "get_distances task",
@@ -82,11 +83,11 @@ esp_err_t init_tasks() {
         &get_distances_t
     );
     if (get_distances_t == NULL) {
-        user_logger(get_distances_tag, (char *)"Failed to create task...");
+        user_logger(get_distances_tag, "Failed to create task...");
         ret = ESP_FAIL;
     }
 
-    user_logger(TAG, (char *)"Initializing get_analogs.");
+    user_logger(TAG, "Initializing get_analogs.");
     xTaskCreate(
         get_analogs,
         "get_analogs task",
@@ -96,7 +97,7 @@ esp_err_t init_tasks() {
         &get_analogs_t
     );
     if (get_analogs_t == NULL) {
-        user_logger(get_analogs_tag, (char *)"Failed to create task...");
+        user_logger(get_analogs_tag, "Failed to create task...");
         ret = ESP_FAIL;
     }
 
@@ -109,7 +110,7 @@ void read_line_sensors(void *params) {
         uint8_t b1 = digitalRead(LINE_2) << 1;
         uint8_t b2 = digitalRead(LINE_3) << 2;
         uint8_t b3 = digitalRead(LINE_4) << 3;
-        state.line_state = state.line_state | b0 | b1 | b2 | b3;
+        state.line_state = 0b0000 | b0 | b1 | b2 | b3;
 
 #ifdef PRINTDB
         Serial.printf("line_state = %d\n", state.line_state);
@@ -120,7 +121,7 @@ void read_line_sensors(void *params) {
 }
 
 void update_uno(void *params) {
-    user_logger(update_uno_tag, (char *)"2 seconds waiting for everything to settle down.");
+    user_logger(update_uno_tag, "2 seconds waiting for everything to settle down.");
     vTaskDelay(pdMS_TO_TICKS(2000));
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(8));
@@ -158,8 +159,9 @@ void get_analogs(void *params) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Inits, debugs, comms, etc. +++++++++++++++++++++++++++++++++++++++++
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 void init_serial() {
-    user_logger((const char *)"init_serial", (char *)"Starting master-slave connection.");
+    user_logger((const char *)"init_serial", "Starting master-slave connection.");
     uno_serial.begin(9600);
 }
 
@@ -188,6 +190,12 @@ void init_pins() {
 }
 
 void user_logger(const char *TAG, char *message) {
+    char buf[256];
+    sprintf(buf, "%s: %s\n", TAG, message);
+    Serial.print(buf);
+}
+
+void user_logger(const char *TAG, const char *message) {
     char buf[256];
     sprintf(buf, "%s: %s\n", TAG, message);
     Serial.print(buf);

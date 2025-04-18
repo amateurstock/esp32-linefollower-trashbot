@@ -1,7 +1,10 @@
 #include <Arduino.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "NewPing.h"
+#include <NewPing.h>
+#include <WiFi.h>
+
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_spiffs.h>
 
 #define PRINTDB
 
@@ -16,6 +19,8 @@ void get_analogs(void *params);
 void init_serial();
 void init_pins();
 void user_logger(const char *TAG, char *message);
+void user_logger(const char *TAG, const char *message);
+esp_err_t mount_spiffs(const char *base_path);
 
 // Typedefs
 typedef struct {
