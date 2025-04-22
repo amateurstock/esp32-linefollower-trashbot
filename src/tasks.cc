@@ -122,8 +122,20 @@ void read_line_sensors(void *params) {
 
 void update_uno(void *params) {
     user_logger(update_uno_tag, "2 seconds waiting for everything to settle down.");
+    float weighted = 0;
     vTaskDelay(pdMS_TO_TICKS(2000));
+
     for (;;) {
+        weighted = (
+            (-6.0f * fetch_bit(state.line_state, 0)) +
+            (-2.0f * fetch_bit(state.line_state, 1)) +
+            ( 2.0f * fetch_bit(state.line_state, 2)) +
+            ( 6.0f * fetch_bit(state.line_state, 3)))
+            /
+            (float)(count_highs(state.line_state)
+        );
+        Serial.printf("Weighted -- %f\n", weighted);
+
         vTaskDelay(pdMS_TO_TICKS(8));
     }
 }
@@ -199,4 +211,20 @@ void user_logger(const char *TAG, const char *message) {
     char buf[256];
     sprintf(buf, "%s: %s\n", TAG, message);
     Serial.print(buf);
+}
+
+uint8_t fetch_bit(uint8_t val, uint8_t pos) {
+    return ((val >> pos) & 1);
+}
+
+uint8_t count_highs(uint8_t val) {
+    uint8_t ret = 0;
+
+    for (uint8_t pos = 0; pos < 4; pos++) {
+        ret += ((val >> pos) & 1);
+    }
+
+    if (ret == 0) ret = 1;
+
+    return ret;
 }
