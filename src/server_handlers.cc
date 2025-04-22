@@ -30,6 +30,10 @@ esp_err_t scripts_handler(httpd_req_t *req) {
 
 esp_err_t updates_handler(httpd_req_t *req) {
     const char *TAG = "updates_handler";
+
+    // Try to figure out how to send data or something idk...
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    return httpd_resp_send(req, NULL, 0);
 }
 
 esp_err_t servos_handler(httpd_req_t *req) {

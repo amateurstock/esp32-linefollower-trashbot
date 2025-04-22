@@ -1,7 +1,6 @@
 #include "main.hh"
 
 const char *root_dir = "/data";
-
 const char *html_path = "/index.html";
 const char *js_path = "/scripts.js";
 

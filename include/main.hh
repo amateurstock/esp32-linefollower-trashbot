@@ -11,9 +11,10 @@
 // RTOS related
 esp_err_t init_tasks();
 void read_line_sensors(void *params);
-void update_uno(void *params);
+void update_motors(void *params);
 void get_distances(void *params);
 void get_analogs(void *params);
+void update_servos(void *param);
 
 // Inits, debugs, comms, etc.
 void init_serial();
@@ -33,11 +34,15 @@ typedef struct {
     uint32_t distance_3;
     uint16_t weight_out;
     uint16_t VB_out;
-}state_t;
+}sensors_t;
 
 typedef struct {
     uint8_t left_motors;
     uint8_t right_motors;
+    uint8_t servo_out1;
+    uint8_t servo_out2;
+    uint8_t servo_out3;
+    uint8_t servo_out4;
 }motors_t;
 
 // Pin names
