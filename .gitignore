@@ -6,6 +6,5 @@
 
 .cache/
 .vscode/
-compile_commands.json
 lib/
 test/
