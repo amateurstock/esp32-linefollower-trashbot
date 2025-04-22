@@ -55,9 +55,41 @@ esp_err_t start_server() {
         .supported_subprotocol = NULL
     };
 
+    httpd_uri_t scripts_uri {
+        .uri = "/scripts.js",
+        .method = HTTP_GET,
+        .handler = scripts_handler,
+        .user_ctx = NULL,
+        .is_websocket = true,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = NULL
+    };
+
+    httpd_uri_t updates_uri {
+        .uri = "/updates",
+        .method = HTTP_GET,
+        .handler = updates_handler,
+        .user_ctx = NULL,
+        .is_websocket = true,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = NULL
+    };
+
+    httpd_uri_t servos_uri {
+        .uri = "/servos",
+        .method = HTTP_GET,
+        .handler = servos_handler,
+        .user_ctx = NULL,
+        .is_websocket = true,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = NULL
+    }
+
     Serial.printf("<%s> Starting web server on port: %d\n", TAG, cfg.server_port);
     if (httpd_start(&web_server, &cfg) == ESP_OK) {
         httpd_register_uri_handler(web_server, &index_uri);
+        httpd_register_uri_handler(web_server, &scripts_uri);
+        httpd_register_uri_handler(web_server, &servos_uri);
     } else {
         user_logger(TAG, "Error! Web server won't start!");
         return ESP_FAIL;

@@ -32,6 +32,46 @@ esp_err_t updates_handler(httpd_req_t *req) {
     const char *TAG = "updates_handler";
 }
 
+esp_err_t servos_handler(httpd_req_t *req) {
+    const char *TAG = "servos_uri";
+
+    char *buf = NULL;
+    char s1[32];
+    char s2[32];
+    char s3[32];
+    char s4[32];
+
+    if (parse_get(req, &buf) != ESP_OK) {
+        user_logger(TAG, "Failed to parse request query.\n");
+        return ESP_FAIL;
+    }
+
+    if (httpd_query_key_value(buf, "s1", s1, sizeof(s1)) != ESP_OK
+        || httpd_query_key_value(buf, "s2", s2, sizeof(s2)) != ESP_OK
+        || httpd_query_key_value(buf, "s3", s3, sizeof(s3)) != ESP_OK
+        || httpd_query_key_value(buf, "s4", s4, sizeof(s4)) != ESP_OK) {
+        free(buf);
+        httpd_resp_send_404(req);
+        return ESP_FAIL;
+    }
+
+    free(buf);
+
+    uint8_t servo1 = atoi(s1);
+    uint8_t servo2 = atoi(s2);
+    uint8_t servo3 = atoi(s3);
+    uint8_t servo4 = atoi(s4);
+
+    Serial.printf("s1: %02d, s2: %02d, s3: %03d, s4: %04d",
+                  servo1,
+                  servo2,
+                  servo3,
+                  servo4);
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    return httpd_resp_send(req, NULL, 0);
+}
+
 esp_err_t serve_files(
     httpd_req_t *req, 
     const char *TAG, 
@@ -41,7 +81,6 @@ esp_err_t serve_files(
     String file_dir = "";
     file_dir += root_dir;
     file_dir += path;
-
     httpd_resp_set_type(req, type);
 
     Serial.printf("<%s> Attempting to open %s\n", TAG, file_dir.c_str());
