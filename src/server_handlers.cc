@@ -69,7 +69,7 @@ esp_err_t servos_handler(httpd_req_t *req) {
 
 
 #ifdef PRINTDB
-    Serial.printf("s1: %02d, s2: %02d, s3: %03d, s4: %04d",
+    Serial.printf("s1: %03d, s2: %03d, s3: %03d, s4: %03d\n",
                   motors.servo_out1,
                   motors.servo_out2,
                   motors.servo_out3,
