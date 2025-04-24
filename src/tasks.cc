@@ -16,9 +16,9 @@ const char *update_servos_tag = "update_servos";
 
 // OOP constructors
 HardwareSerial uno_serial(2);
-NewPing distance_1(SHARED_TRIG, ECHO_1, 100);
-NewPing distance_2(SHARED_TRIG, ECHO_2, 100);
-NewPing distance_3(SHARED_TRIG, ECHO_3, 100);
+Ultrasonic distance_1(SHARED_TRIG, ECHO_1);
+Ultrasonic distance_2(SHARED_TRIG, ECHO_2);
+Ultrasonic distance_3(SHARED_TRIG, ECHO_3);
 
 // Typedefs
 sensors_t sensors_state{
@@ -165,11 +165,11 @@ void update_motors(void *params) {
 
 void get_distances(void *params) {
     for (;;) {
-        sensors_state.distance_1 = distance_1.ping_cm();
+        sensors_state.distance_1 = distance_1.pingCM();
         vTaskDelay(pdMS_TO_TICKS(50));
-        sensors_state.distance_2 = distance_2.ping_cm();
+        sensors_state.distance_2 = distance_2.pingCM();
         vTaskDelay(pdMS_TO_TICKS(50));
-        sensors_state.distance_3 = distance_3.ping_cm();
+        sensors_state.distance_3 = distance_3.pingCM();
         vTaskDelay(pdMS_TO_TICKS(50));
 
 #ifdef PRINTDB
