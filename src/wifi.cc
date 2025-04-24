@@ -83,7 +83,7 @@ esp_err_t start_server() {
         .is_websocket = true,
         .handle_ws_control_frames = false,
         .supported_subprotocol = NULL
-    }
+    };
 
     Serial.printf("<%s> Starting web server on port: %d\n", TAG, cfg.server_port);
     if (httpd_start(&web_server, &cfg) == ESP_OK) {
