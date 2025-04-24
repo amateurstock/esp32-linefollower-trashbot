@@ -154,7 +154,10 @@ void update_motors(void *params) {
             /
             (float)(count_highs(sensors_state.line_state)
         );
+
+#ifdef PRINTDB
         Serial.printf("Weighted -- %f\n", weighted);
+#endif
 
         vTaskDelay(pdMS_TO_TICKS(8));
     }
@@ -178,7 +181,6 @@ void get_distances(void *params) {
 }
 
 void get_analogs(void *params) {
-    char *TAG = "get_analogs";
     for (;;) {
         sensors_state.VB_out = analogRead(VB_PIN);
         sensors_state.weight_out = analogRead(WEIGHT_PIN);

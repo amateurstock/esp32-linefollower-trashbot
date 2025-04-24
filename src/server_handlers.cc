@@ -4,7 +4,8 @@
 extern const char *root_dir;
 extern const char *html_path;
 extern const char *js_path;
-extern state_t state;
+extern sensors_t sensors_state;
+extern motors_t motors;
 
 esp_err_t index_handler(httpd_req_t *req) {
     const char *TAG = "index_handler";
@@ -61,16 +62,19 @@ esp_err_t servos_handler(httpd_req_t *req) {
 
     free(buf);
 
-    uint8_t servo1 = atoi(s1);
-    uint8_t servo2 = atoi(s2);
-    uint8_t servo3 = atoi(s3);
-    uint8_t servo4 = atoi(s4);
+    motors.servo_out1 = atoi(s1);
+    motors.servo_out2 = atoi(s2);
+    motors.servo_out3 = atoi(s3);
+    motors.servo_out4 = atoi(s4);
 
+
+#ifdef PRINTDB
     Serial.printf("s1: %02d, s2: %02d, s3: %03d, s4: %04d",
-                  servo1,
-                  servo2,
-                  servo3,
-                  servo4);
+                  motors.servo_out1,
+                  motors.servo_out2,
+                  motors.servo_out3,
+                  motors.servo_out4);
+#endif
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     return httpd_resp_send(req, NULL, 0);
