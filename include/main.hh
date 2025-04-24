@@ -7,6 +7,7 @@
 #include <esp_spiffs.h>
 
 #define PRINTDB
+//#define ULTRASONIC_ON
 
 // RTOS related
 esp_err_t init_tasks();

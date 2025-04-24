@@ -165,12 +165,16 @@ void update_motors(void *params) {
 
 void get_distances(void *params) {
     for (;;) {
+#ifdef ULTRASONIC_ON
         sensors_state.distance_1 = distance_1.pingCM();
         vTaskDelay(pdMS_TO_TICKS(50));
         sensors_state.distance_2 = distance_2.pingCM();
         vTaskDelay(pdMS_TO_TICKS(50));
         sensors_state.distance_3 = distance_3.pingCM();
         vTaskDelay(pdMS_TO_TICKS(50));
+#else
+        vTaskDelay(pdMS_TO_TICKS(1000));
+#endif
 
 #ifdef PRINTDB
         Serial.printf("distance_1 = %d\n", sensors_state.distance_1);
