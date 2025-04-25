@@ -14,23 +14,23 @@ esp_err_t mount_spiffs(const char *base_path) {
 
     esp_err_t ret = esp_vfs_spiffs_register(&cfg);
     switch (ret) {
+
         case ESP_FAIL: {
             user_logger(TAG, (char *)"Failed to mount or format filesystem");
-            return ret;
-        }
-        case ESP_ERR_NOT_FOUND: {
-            user_logger(TAG, (char *)"Failed to find SPIFFS partition");
-            return ret;
+            break;
         }
 
-        case ESP_OK: {
-            user_logger(TAG, (char *)"SPIFFS mounted successfully!");
-            return ret;
+        case ESP_ERR_NOT_FOUND: {
+            user_logger(TAG, (char *)"Failed to find SPIFFS partition");
+            break;
         }
 
         default: {
             user_logger(TAG, (char *)"Failed to initialize SPIFFS");
-            return ret;
+            break;
         }
+        return ret;
     }
+    user_logger(TAG, (char *)"SPIFFS mounted successfully!");
+    return ret;
 }

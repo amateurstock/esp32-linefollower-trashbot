@@ -24,7 +24,6 @@ void user_logger(const char *TAG, char *message);
 void user_logger(const char *TAG, const char *message);
 esp_err_t mount_spiffs(const char *base_path);
 esp_err_t start_server();
-esp_err_t init_wifi();
 uint8_t fetch_bit(uint8_t val, uint8_t pos);
 uint8_t count_highs(uint8_t val);
 
