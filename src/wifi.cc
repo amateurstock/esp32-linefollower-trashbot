@@ -30,7 +30,7 @@ esp_err_t init_wifi() {
         return ret;
     }
 
-    if (WiFi.softAP(ssid, pass)) {
+    if (!WiFi.softAP(ssid, pass)) {
         user_logger(TAG, "Failed to start access point!");
         ret = ESP_FAIL;
         return ret;
@@ -89,6 +89,7 @@ esp_err_t start_server() {
     if (httpd_start(&web_server, &cfg) == ESP_OK) {
         httpd_register_uri_handler(web_server, &index_uri);
         httpd_register_uri_handler(web_server, &scripts_uri);
+        httpd_register_uri_handler(web_server, &updates_uri);
         httpd_register_uri_handler(web_server, &servos_uri);
     } else {
         user_logger(TAG, "Error! Web server won't start!");

@@ -27,6 +27,7 @@ void user_logger(const char *TAG, char *message);
 void user_logger(const char *TAG, const char *message);
 esp_err_t mount_spiffs(const char *base_path);
 esp_err_t start_server();
+esp_err_t init_wifi();
 uint8_t fetch_bit(uint8_t val, uint8_t pos);
 uint8_t count_highs(uint8_t val);
 
@@ -71,5 +72,7 @@ typedef struct {
 // |--- Weight and Battery sensor
 #define WEIGHT_PIN 14
 #define VB_PIN 13
+// |---|--- Do take note that these pins are unavailable for use during WiFi mode.
+// |---|--- For prod, turn off wifi.
 
 #endif
