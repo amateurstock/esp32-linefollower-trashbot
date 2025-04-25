@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include "ultrasonic.hh"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
