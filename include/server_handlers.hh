@@ -1,3 +1,6 @@
+#ifndef SERVER_HANDLERS_HH
+#define SERVER_HANDLERS_HH
+
 #include <esp_http_server.h>
 
 esp_err_t index_handler (httpd_req_t *req);
@@ -12,3 +15,5 @@ esp_err_t serve_files(
     const char *type
 );
 esp_err_t parse_get(httpd_req_t *req, char **obuf);
+
+#endif

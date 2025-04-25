@@ -62,10 +62,15 @@ esp_err_t servos_handler(httpd_req_t *req) {
 
     free(buf);
 
-    motors.servo_out1 = atoi(s1);
-    motors.servo_out2 = atoi(s2);
-    motors.servo_out3 = atoi(s3);
-    motors.servo_out4 = atoi(s4);
+    uint16_t _servo1 = atoi(s1);
+    uint16_t _servo2 = atoi(s2);
+    uint16_t _servo3 = atoi(s3);
+    uint16_t _servo4 = atoi(s4);
+
+    motors.servo_out1 = map(_servo1, 0, 270, 0, UINT8_MAX);
+    motors.servo_out2 = map(_servo2, 0, 270, 0, UINT8_MAX);
+    motors.servo_out3 = map(_servo3, 0, 270, 0, UINT8_MAX);
+    motors.servo_out4 = map(_servo4, 0, 270, 0, UINT8_MAX);
 
 
 #ifdef PRINTDB

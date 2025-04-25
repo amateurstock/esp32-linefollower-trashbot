@@ -1,3 +1,6 @@
+#ifndef MAIN_HH
+#define MAIN_HH
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include "ultrasonic.hh"
@@ -68,3 +71,5 @@ typedef struct {
 // |--- Weight and Battery sensor
 #define WEIGHT_PIN 14
 #define VB_PIN 13
+
+#endif
