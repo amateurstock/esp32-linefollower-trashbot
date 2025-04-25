@@ -1,5 +1,9 @@
 #include "main.hh"
 
+#define K_P 1.0
+#define K_I 0.1
+#define K_D 0.1
+
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
 TaskHandle_t update_motors_t = NULL;
@@ -16,6 +20,7 @@ const char *update_servos_tag = "update_servos";
 
 // OOP constructors
 HardwareSerial uno_serial(2);
+PID pid_controller(K_P, K_I, K_D, 0);
 #ifdef ULTRASONIC_ON
 Ultrasonic distance_1(SHARED_TRIG, ECHO_1);
 Ultrasonic distance_2(SHARED_TRIG, ECHO_2);
@@ -147,11 +152,13 @@ void read_line_sensors(void *params) {
 
 void update_motors(void *params) {
     user_logger(update_motors_tag, "Waiting for the rest to init.");
-    float weighted = 0;
+    float error = 0;
+    float delta = 0;
     vTaskDelay(pdMS_TO_TICKS(2000));
 
+    pid_controller.set_start_time(millis());
     for (;;) {
-        weighted = (
+        error = (
             (-6.0f * fetch_bit(sensors_state.line_state, 0)) +
             (-2.0f * fetch_bit(sensors_state.line_state, 1)) +
             ( 2.0f * fetch_bit(sensors_state.line_state, 2)) +
@@ -159,9 +166,12 @@ void update_motors(void *params) {
             /
             (float)(count_highs(sensors_state.line_state)
         );
+        delta = pid_controller(error, millis());
+
 
 #ifdef PRINT_DBG
         Serial.printf("Weighted -- %f\n", weighted);
+        Serial.printf("Delta -- %f\n", delta);
 #endif
 
         vTaskDelay(pdMS_TO_TICKS(8));

@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include "pid.hh"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -46,8 +47,8 @@ typedef struct {
 }sensors_t;
 
 typedef struct {
-    uint8_t left_motors;
-    uint8_t right_motors;
+    int16_t left_motors;
+    int16_t right_motors;
     uint8_t servo_out1;
     uint8_t servo_out2;
     uint8_t servo_out3;
