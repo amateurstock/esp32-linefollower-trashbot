@@ -132,7 +132,7 @@ void read_line_sensors(void *params) {
         uint8_t b3 = digitalRead(LINE_4) << 3;
         sensors_state.line_state = 0b0000 | b0 | b1 | b2 | b3;
 
-#ifdef PRINTDB
+#ifdef PRINT_DBG
         Serial.printf("line_state = %d\n", sensors_state.line_state);
 #endif
 
@@ -155,7 +155,7 @@ void update_motors(void *params) {
             (float)(count_highs(sensors_state.line_state)
         );
 
-#ifdef PRINTDB
+#ifdef PRINT_DBG
         Serial.printf("Weighted -- %f\n", weighted);
 #endif
 
@@ -176,7 +176,7 @@ void get_distances(void *params) {
         vTaskDelay(pdMS_TO_TICKS(1000));
 #endif
 
-#ifdef PRINTDB
+#ifdef PRINT_DBG
         Serial.printf("distance_1 = %d\n", sensors_state.distance_1);
         Serial.printf("distance_2 = %d\n", sensors_state.distance_2);
         Serial.printf("distance_3 = %d\n", sensors_state.distance_3);

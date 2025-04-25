@@ -9,7 +9,7 @@
 #include <freertos/task.h>
 #include <esp_spiffs.h>
 
-#define PRINTDB
+#define PRINT_DBG
 //#define ULTRASONIC_ON
 
 // RTOS related
