@@ -16,9 +16,11 @@ const char *update_servos_tag = "update_servos";
 
 // OOP constructors
 HardwareSerial uno_serial(2);
+#ifdef ULTRASONIC_ON
 Ultrasonic distance_1(SHARED_TRIG, ECHO_1);
 Ultrasonic distance_2(SHARED_TRIG, ECHO_2);
 Ultrasonic distance_3(SHARED_TRIG, ECHO_3);
+#endif
 
 // Typedefs
 sensors_t sensors_state{
@@ -125,6 +127,9 @@ esp_err_t init_tasks() {
 }
 
 void read_line_sensors(void *params) {
+    user_logger(read_line_sensors_tag, "Waiting for the rest to init.");
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
     for (;;) {
         uint8_t b0 = digitalRead(LINE_1);
         uint8_t b1 = digitalRead(LINE_2) << 1;
@@ -141,7 +146,7 @@ void read_line_sensors(void *params) {
 }
 
 void update_motors(void *params) {
-    user_logger(update_motors_tag, "2 seconds waiting for everything to settle down.");
+    user_logger(update_motors_tag, "Waiting for the rest to init.");
     float weighted = 0;
     vTaskDelay(pdMS_TO_TICKS(2000));
 
@@ -164,6 +169,9 @@ void update_motors(void *params) {
 }
 
 void get_distances(void *params) {
+    user_logger(get_distances_tag, "Waiting for the rest to init.");
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
     for (;;) {
 #ifdef ULTRASONIC_ON
         sensors_state.distance_1 = distance_1.pingCM();
@@ -185,16 +193,29 @@ void get_distances(void *params) {
 }
 
 void get_analogs(void *params) {
+    user_logger(get_analogs_tag, "Waiting for the rest to init.");
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
     for (;;) {
         sensors_state.VB_out = analogRead(VB_PIN);
         sensors_state.weight_out = analogRead(WEIGHT_PIN);
         vTaskDelay(pdMS_TO_TICKS(1000));
+
+#ifndef WIFI_DBG
+        if (sensors_state.weight_out >= WEIGHT_THRESHOLD
+        || sensors_state.VB_out <= BATTERY_THRESHOLD) {
+            user_logger(get_analogs_tag, "Threshold met. Halting operations.");
+            stop_operations();
+        }
+#endif
+
     }
 }
 
 void update_servos(void *param) {
-    user_logger(update_servos_tag, "Waiting for 2 seconds for everything else to settle out...");
+    user_logger(update_servos_tag, "Waiting for the rest to init.");
     vTaskDelay(pdMS_TO_TICKS(2000));
+
     for (;;) {
         analogWrite(ARM_1, motors.servo_out1);
         analogWrite(ARM_2, motors.servo_out2);
@@ -203,6 +224,8 @@ void update_servos(void *param) {
         vTaskDelay(pdMS_TO_TICKS(8));
     }
 }
+
+
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -234,8 +257,6 @@ void init_pins() {
 
     // Note, there's no such thing as a pinMode for ADC pins. Just call
     // analogRead() somewhere and the esp32 automatically knows what's up.
-    // Also, the NewPing constructors setup the pins necessary for the
-    // ultrasonic sensors.
 }
 
 void user_logger(const char *TAG, char *message) {
@@ -264,4 +285,11 @@ uint8_t count_highs(uint8_t val) {
     if (ret == 0) ret = 1;
 
     return ret;
+}
+
+void stop_operations() {
+    taskDISABLE_INTERRUPTS();
+    vTaskSuspendAll();
+
+    for (;;) {}
 }

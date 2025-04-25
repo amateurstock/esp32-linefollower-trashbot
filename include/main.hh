@@ -8,8 +8,12 @@
 #include <freertos/task.h>
 #include <esp_spiffs.h>
 
+// Macros
 #define PRINT_DBG
+#define WIFI_DBG
 //#define ULTRASONIC_ON
+#define WEIGHT_THRESHOLD 2048 // Arbitrary numbers. change at will
+#define BATTERY_THRESHOLD 255 // This one too.
 
 // RTOS related
 esp_err_t init_tasks();
@@ -29,6 +33,7 @@ esp_err_t start_server();
 esp_err_t init_wifi();
 uint8_t fetch_bit(uint8_t val, uint8_t pos);
 uint8_t count_highs(uint8_t val);
+void stop_operations();
 
 // Typedefs
 typedef struct {
