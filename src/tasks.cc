@@ -166,11 +166,11 @@ void update_motors(void *params) {
             /
             (float)(count_highs(sensors_state.line_state)
         );
-        delta = pid_controller(error, millis());
+        delta = pid_controller.calculate(error, millis());
 
 
 #ifdef PRINT_DBG
-        Serial.printf("Weighted -- %f\n", weighted);
+        Serial.printf("Error -- %f || ", error);
         Serial.printf("Delta -- %f\n", delta);
 #endif
 

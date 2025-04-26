@@ -1,7 +1,7 @@
 #ifndef PID_HH
 #define PID_HH
 
-#include <cstdint>
+#include <Arduino.h>
 
 class PID {
 private:
