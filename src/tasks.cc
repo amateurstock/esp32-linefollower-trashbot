@@ -1,4 +1,7 @@
 #include "main.hh"
+#include "motors_control.hh"
+#include "pid.hh"
+#include <cstdio>
 
 #define K_P 1.0
 #define K_I 0.1
@@ -64,7 +67,7 @@ esp_err_t init_tasks() {
         "read_line_sensors task",
         4096,
         NULL,
-        10,
+        9,
         &read_line_sensors_t
     );
     if (read_line_sensors_t == NULL) {
@@ -78,7 +81,7 @@ esp_err_t init_tasks() {
         "update_motors task",
         4096,
         NULL,
-        10,
+        8,
         &update_motors_t
     );
     if (update_motors_t == NULL) {
@@ -92,21 +95,20 @@ esp_err_t init_tasks() {
         "get_distances task",
         4096,
         NULL,
-        10,
+        9,
         &get_distances_t
     );
     if (get_distances_t == NULL) {
         user_logger(get_distances_tag, "Failed to create task...");
         ret = ESP_FAIL;
     }
-
     user_logger(TAG, "Initializing get_analogs.");
     xTaskCreate(
         get_analogs,
         "get_analogs task",
         4096,
         NULL,
-        10,
+        6,
         &get_analogs_t
     );
     if (get_analogs_t == NULL) {
@@ -120,7 +122,7 @@ esp_err_t init_tasks() {
         "update_servos task",
         4096,
         NULL,
-        10,
+        7,
         &update_servos_t
     );
     if (update_servos_t == NULL) {
@@ -143,6 +145,7 @@ void read_line_sensors(void *params) {
         sensors_state.line_state = 0b0000 | b0 | b1 | b2 | b3;
 
 #ifdef PRINT_DBG
+        Serial.printf("<%d> || ", millis());
         Serial.printf("line_state = %d\n", sensors_state.line_state);
 #endif
 
@@ -154,6 +157,7 @@ void update_motors(void *params) {
     user_logger(update_motors_tag, "Waiting for the rest to init.");
     float error = 0;
     float delta = 0;
+    char buf[32] = {0};
     vTaskDelay(pdMS_TO_TICKS(2000));
 
     pid_controller.set_start_time(millis());
@@ -167,14 +171,20 @@ void update_motors(void *params) {
             (float)(count_highs(sensors_state.line_state)
         );
         delta = pid_controller.calculate(error, millis());
+        delta_steering(&motors, delta);
 
+        sprintf(buf, "L:%d,R:%d\n", motors.left_motors, motors.right_motors);
+        uno_serial.print(buf);
 
 #ifdef PRINT_DBG
+        Serial.printf("<%d> || ", millis());
         Serial.printf("Error -- %f || ", error);
-        Serial.printf("Delta -- %f\n", delta);
+        Serial.printf("Delta -- %f || ", delta);
+        Serial.printf("%s\n", buf);
 #endif
 
-        vTaskDelay(pdMS_TO_TICKS(8));
+        memset(buf, 0, sizeof(buf));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
@@ -243,7 +253,7 @@ void update_servos(void *param) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void init_serial() {
-    user_logger((const char *)"init_serial", "Starting master-slave connection.");
+    user_logger("init_serial", "Starting master-slave connection.");
     uno_serial.begin(9600);
 }
 

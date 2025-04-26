@@ -55,6 +55,8 @@ typedef struct {
     uint8_t servo_out4;
 }motors_t;
 
+#include "motors_control.hh"
+
 // Pin names
 // |--- Line Sensors
 #define LINE_1 32
