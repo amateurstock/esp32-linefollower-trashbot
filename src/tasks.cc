@@ -14,12 +14,20 @@ TaskHandle_t get_distances_t = NULL;
 TaskHandle_t get_analogs_t = NULL;
 TaskHandle_t update_servos_t = NULL;
 
+#ifdef PRINT_DBG
+TaskHandle_t print_debug_t = NULL;
+#endif
+
 // Function TAGs
 const char *read_line_sensors_tag = "read_line_sensors";
 const char *update_motors_tag = "update_motors";
 const char *get_distances_tag = "get_distances";
 const char *get_analogs_tag = "get analogs";
 const char *update_servos_tag = "update_servos";
+
+#ifdef PRINT_DBG
+const char *print_debug_tag = "print_debug";
+#endif
 
 // OOP constructors
 HardwareSerial uno_serial(2);
@@ -67,7 +75,7 @@ esp_err_t init_tasks() {
         "read_line_sensors task",
         4096,
         NULL,
-        9,
+        5,
         &read_line_sensors_t
     );
     if (read_line_sensors_t == NULL) {
@@ -130,6 +138,22 @@ esp_err_t init_tasks() {
         ret = ESP_FAIL;
     }
 
+#ifdef PRINT_DBG
+    user_logger(TAG, "Initializing print_debug");
+    xTaskCreate(
+        print_debug,
+        "print_debug task",
+        8192,
+        NULL,
+        1,
+        &print_debug_t
+    );
+    if (print_debug_t == NULL) {
+        user_logger(print_debug_tag, "Failed to create task...");
+        ret = ESP_FAIL;
+    }
+#endif
+
     return ret;
 }
 
@@ -143,11 +167,6 @@ void read_line_sensors(void *params) {
         uint8_t b2 = digitalRead(LINE_3) << 2;
         uint8_t b3 = digitalRead(LINE_4) << 3;
         sensors_state.line_state = 0b0000 | b0 | b1 | b2 | b3;
-
-#ifdef PRINT_DBG
-        Serial.printf("<%d> || ", millis());
-        Serial.printf("line_state = %d\n", sensors_state.line_state);
-#endif
 
         vTaskDelay(pdMS_TO_TICKS(8));
     }
@@ -176,13 +195,6 @@ void update_motors(void *params) {
         sprintf(buf, "L:%d,R:%d\n", motors.left_motors, motors.right_motors);
         uno_serial.print(buf);
 
-#ifdef PRINT_DBG
-        Serial.printf("<%d> || ", millis());
-        Serial.printf("Error -- %f || ", error);
-        Serial.printf("Delta -- %f || ", delta);
-        Serial.printf("%s\n", buf);
-#endif
-
         memset(buf, 0, sizeof(buf));
         vTaskDelay(pdMS_TO_TICKS(10));
     }
@@ -204,11 +216,6 @@ void get_distances(void *params) {
         vTaskDelay(pdMS_TO_TICKS(1000));
 #endif
 
-#ifdef PRINT_DBG
-        Serial.printf("distance_1 = %d\n", sensors_state.distance_1);
-        Serial.printf("distance_2 = %d\n", sensors_state.distance_2);
-        Serial.printf("distance_3 = %d\n", sensors_state.distance_3);
-#endif
     }
 }
 
@@ -221,7 +228,7 @@ void get_analogs(void *params) {
         sensors_state.weight_out = analogRead(WEIGHT_PIN);
         vTaskDelay(pdMS_TO_TICKS(1000));
 
-#ifndef WIFI_DBG
+#ifdef IS_HALTING
         if (sensors_state.weight_out >= WEIGHT_THRESHOLD
         || sensors_state.VB_out <= BATTERY_THRESHOLD) {
             user_logger(get_analogs_tag, "Threshold met. Halting operations.");
@@ -242,8 +249,31 @@ void update_servos(void *param) {
         analogWrite(ARM_3, motors.servo_out3);
         analogWrite(ARM_4, motors.servo_out4);
         vTaskDelay(pdMS_TO_TICKS(8));
+
+
+    }
+
+}
+
+#ifdef PRINT_DBG
+void print_debug(void *param) {
+    user_logger(print_debug_tag, "Waiting for the rest to init.");
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
+    for (;;) {
+        Serial.printf("<%d> || ", millis());
+        Serial.printf("line_state = %d || ", sensors_state.line_state);
+        Serial.printf("distances = %d, %d, %d\n",
+                      sensors_state.distance_1,
+                      sensors_state.distance_2,
+                      sensors_state.distance_3);
+        Serial.printf("motors = %d, %d\n\n", motors.left_motors, motors.right_motors);
+
+        vTaskDelay(pdMS_TO_TICKS(20));
+
     }
 }
+#endif
 
 
 

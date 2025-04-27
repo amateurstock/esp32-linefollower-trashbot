@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include "pid.hh"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -11,8 +10,9 @@
 
 // Macros
 #define PRINT_DBG
-#define WIFI_DBG
+//#define WIFI_DBG
 //#define ULTRASONIC_ON
+//#define IS_HALTING
 #define WEIGHT_THRESHOLD 2048 // Arbitrary numbers. change at will
 #define BATTERY_THRESHOLD 255 // This one too.
 
@@ -23,6 +23,10 @@ void update_motors(void *params);
 void get_distances(void *params);
 void get_analogs(void *params);
 void update_servos(void *param);
+
+#ifdef PRINT_DBG
+void print_debug(void *param);
+#endif
 
 // Inits, debugs, comms, etc.
 void init_serial();
@@ -55,7 +59,6 @@ typedef struct {
     uint8_t servo_out4;
 }motors_t;
 
-#include "motors_control.hh"
 
 // Pin names
 // |--- Line Sensors
