@@ -181,6 +181,11 @@ void update_motors(void *params) {
 
     pid_controller.set_start_time(millis());
     for (;;) {
+        if (uno_serial.available()) {
+            String buffer = uno_serial.readStringUntil('\n');
+            if ((buffer != "ok") || (buffer != "ok\n")) stop_operations();
+        }
+
         error = (
             (-6.0f * fetch_bit(sensors_state.line_state, 0)) +
             (-2.0f * fetch_bit(sensors_state.line_state, 1)) +
@@ -192,11 +197,11 @@ void update_motors(void *params) {
         delta = pid_controller.calculate(error, millis());
         delta_steering(&motors, delta);
 
-        sprintf(buf, "L:%d,R:%d\n", motors.left_motors, motors.right_motors);
+        sprintf(buf, "L:%d;R:%d;\n", motors.left_motors, motors.right_motors);
         uno_serial.print(buf);
 
         memset(buf, 0, sizeof(buf));
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(16));
     }
 }
 
@@ -338,6 +343,7 @@ uint8_t count_highs(uint8_t val) {
 }
 
 void stop_operations() {
+    user_logger("stop_operations", "Halting operations until further notice...");
     taskDISABLE_INTERRUPTS();
     vTaskSuspendAll();
 
