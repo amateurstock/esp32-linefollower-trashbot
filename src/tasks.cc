@@ -1,6 +1,7 @@
 #include "main.hh"
 #include "motors_control.hh"
 #include "pid.hh"
+#include "ultrasonic.hh"
 #include <cstdio>
 
 #define K_P 1.0
@@ -32,11 +33,27 @@ const char *print_debug_tag = "print_debug";
 // OOP constructors
 HardwareSerial uno_serial(2);
 PID pid_controller(K_P, K_I, K_D, 0);
-#ifdef ULTRASONIC_ON
-Ultrasonic distance_1(SHARED_TRIG, ECHO_1);
-Ultrasonic distance_2(SHARED_TRIG, ECHO_2);
-Ultrasonic distance_3(SHARED_TRIG, ECHO_3);
-#endif
+Ultrasonic ultrasonic1 (
+    SHARED_TRIG,
+    ECHO_1,
+    100,
+    ultrasonic1_rise,
+    ultrasonic1_fall
+);
+Ultrasonic ultrasonic2 (
+    SHARED_TRIG,
+    ECHO_2,
+    100,
+    ultrasonic2_rise,
+    ultrasonic2_fall
+);
+Ultrasonic ultrasonic3 (
+    SHARED_TRIG,
+    ECHO_3,
+    100,
+    ultrasonic3_rise,
+    ultrasonic3_fall
+);
 
 // Typedefs
 sensors_t sensors_state{
@@ -207,6 +224,9 @@ void update_motors(void *params) {
 
 void get_distances(void *params) {
     user_logger(get_distances_tag, "Waiting for the rest to init.");
+    setup_ultrasonic_pins(ultrasonic1);
+    //setup_ultrasonic_pins(ultrasonic1);
+    //setup_ultrasonic_pins(ultrasonic1);
     vTaskDelay(pdMS_TO_TICKS(2000));
 
     for (;;) {

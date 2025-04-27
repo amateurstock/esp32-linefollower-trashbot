@@ -1,65 +1,65 @@
 #include "ultrasonic.hh"
 
-// Individual sonars shit
+extern Ultrasonic ultrasonic1;
+extern Ultrasonic ultrasonic2;
+extern Ultrasonic ultrasonic3;
+
 Ultrasonic::Ultrasonic(
     uint8_t trig_pin,
     uint8_t echo_pin,
-    uint32_t max_distance
+    uint32_t max_distance,
+    void (*isr_rise)(void),
+    void (*isr_fall)(void)
 ) {
     _trig_pin = trig_pin;
     _echo_pin = echo_pin;
     _max_distance = max_distance;
-
-    pinMode(_trig_pin, OUTPUT);
-    pinMode(_echo_pin, INPUT);
-
-    digitalWrite(_trig_pin, LOW);
+    _isr_rise = isr_rise;
+    _isr_fall = isr_fall;
 }
 
-Ultrasonic::Ultrasonic(
-    uint8_t trig_pin,
-    uint8_t echo_pin
-) {
-    _trig_pin = trig_pin;
-    _echo_pin = echo_pin;
+void setup_ultrasonic_pins(Ultrasonic &ultrasonic) {
+    pinMode(ultrasonic._trig_pin, OUTPUT);
+    pinMode(ultrasonic._echo_pin, INPUT);
+    digitalWrite(ultrasonic._trig_pin, LOW);
 
-    pinMode(_trig_pin, OUTPUT);
-    pinMode(_echo_pin, INPUT);
-}
-
-uint32_t Ultrasonic::ping_distance_cm() {
-
+    attachInterrupt(
+        digitalPinToInterrupt(ultrasonic._echo_pin),
+        ultrasonic._isr_rise,
+        RISING);
+    attachInterrupt(
+        digitalPinToInterrupt(ultrasonic._echo_pin),
+        ultrasonic._isr_fall,
+        FALLING);
 }
 
 
 
 
-// Arrays shit
-void UltrasonicArray::ping_distances_cm() {
-    switch (_select) {
-        case SONAR1: {
+// ++++++++++++++++++++++++++++++++++++++++++++++++++
+// ISR Routines
+// ==================================================
 
-            break;
-        }
-        case SONAR2: {
-
-            break;
-        }
-        case SONAR3: {
-
-            break;
-        }
-    }
+// ultrasonic1
+void IRAM_ATTR ultrasonic1_rise() {
+    ultrasonic1._echo_start = micros();
+}
+void IRAM_ATTR ultrasonic1_fall() {
+    ultrasonic1._echo_end = micros();
 }
 
-uint32_t UltrasonicArray::return_distance(SonarSelect sonar) {
-    uint32_t ret = 0;
-    switch (sonar) {
-        case SONAR1: ret = _sonar1_out; break;
-        case SONAR2: ret = _sonar2_out; break;
-        case SONAR3: ret = _sonar3_out; break;
-        default: break;
-    }
+// ultrasonic2
+void IRAM_ATTR ultrasonic2_rise() {
+    ultrasonic2._echo_start = micros();
+}
+void IRAM_ATTR ultrasonic2_fall() {
+    ultrasonic2._echo_end = micros();
+}
 
-    return ret;
+// ultrasonic3
+void IRAM_ATTR ultrasonic3_rise() {
+    ultrasonic3._echo_start = micros();
+}
+void IRAM_ATTR ultrasonic3_fall() {
+    ultrasonic3._echo_end = micros();
 }

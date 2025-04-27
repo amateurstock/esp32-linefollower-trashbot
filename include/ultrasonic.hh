@@ -3,57 +3,46 @@
 
 #include <Arduino.h>
 
+typedef enum {
+    IDLE,
+    WAIT_RISE,
+    WAIT_FALL
+} sonar_state_t;
+
 class Ultrasonic {
-private:
+public:
     uint8_t _trig_pin;
     uint8_t _echo_pin;
-    uint32_t _max_distance = 100;
+    uint32_t _max_distance;
+    uint32_t _reading = UINT32_MAX;
 
-public:
+    uint32_t _echo_start = 0;
+    uint32_t _echo_end = 0;
+    uint32_t _start_time = 0;
+    uint32_t _last_time = 0;
+    sonar_state_t _sonar = IDLE;
+
+    void (*_isr_rise)(void);
+    void (*_isr_fall)(void);
+
     Ultrasonic(
         uint8_t trig_pin,
         uint8_t echo_pin,
-        uint32_t max_distance
+        uint32_t max_distance,
+        void (*isr_rise)(void),
+        void (*isr_fall)(void)
     );
-
-    Ultrasonic(
-        uint8_t trig_pin,
-        uint8_t echo_pin
-    );
-
-    uint32_t ping_distance_cm();
 };
 
-class UltrasonicArray {
-public:
-    typedef enum {
-        SONAR1 = 1,
-        SONAR2,
-        SONAR3
-    }SonarSelect;
+void setup_ultrasonic_pins(Ultrasonic &ultrasonic);
 
-    UltrasonicArray(
-        Ultrasonic sonar1,
-        Ultrasonic sonar2,
-        Ultrasonic sonar3
-    );
-    void ping_distances_cm();
-    uint32_t return_distance(SonarSelect sonar);
+void ultrasonic1_rise();
+void ultrasonic1_fall();
 
-private:
-    Ultrasonic _sonar1;
-    Ultrasonic _sonar2;
-    Ultrasonic _sonar3;
-    
-    SonarSelect _select = SONAR1;
+void ultrasonic2_rise();
+void ultrasonic2_fall();
 
-    // Just make it max so that the outside logic won't take "0" as a
-    // signal to start doing something
-    uint32_t _sonar1_out = UINT32_MAX;
-    uint32_t _sonar2_out = UINT32_MAX;
-    uint32_t _sonar3_out = UINT32_MAX;
-
-
-};
+void ultrasonic3_rise();
+void ultrasonic3_fall();
 
 #endif
