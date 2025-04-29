@@ -4,9 +4,9 @@
 #include "ultrasonic.hh"
 #include <cstdio>
 
-#define K_P 1.0
-#define K_I 0.1
-#define K_D 0.1
+#define K_P 4.0
+#define K_I 0.0
+#define K_D 0.0
 
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
@@ -200,14 +200,17 @@ void update_motors(void *params) {
     for (;;) {
         if (uno_serial.available()) {
             String buffer = uno_serial.readStringUntil('\n');
+            Serial.printf("%s\n", buffer);
+#ifdef IS_HALTING
             if ((buffer != "ok") || (buffer != "ok\n")) stop_operations();
+#endif
         }
 
         error = (
-            (-6.0f * fetch_bit(sensors_state.line_state, 0)) +
-            (-2.0f * fetch_bit(sensors_state.line_state, 1)) +
-            ( 2.0f * fetch_bit(sensors_state.line_state, 2)) +
-            ( 6.0f * fetch_bit(sensors_state.line_state, 3)))
+            ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
+            ( 2.0f * fetch_bit(sensors_state.line_state, 1)) +
+            (-2.0f * fetch_bit(sensors_state.line_state, 2)) +
+            (-6.0f * fetch_bit(sensors_state.line_state, 3)))
             /
             (float)(count_highs(sensors_state.line_state)
         );
@@ -215,10 +218,11 @@ void update_motors(void *params) {
         delta_steering(&motors, delta);
 
         sprintf(buf, "L:%d;R:%d;\n", motors.left_motors, motors.right_motors);
+        //sprintf(buf, "L:100;R:100;\n");
         uno_serial.print(buf);
 
         memset(buf, 0, sizeof(buf));
-        vTaskDelay(pdMS_TO_TICKS(16));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 

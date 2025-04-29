@@ -1,5 +1,7 @@
 #include "motors_control.hh"
 
+#define SCALE 192
+
 void delta_steering(motors_t *motors, float delta) {
     float degrees = 7.5f * delta;
 
@@ -8,8 +10,8 @@ void delta_steering(motors_t *motors, float delta) {
     if (degrees < -90.0) degrees = -90.0;
 
     float radians = degrees * M_PI / 180.0;
-    int x_comp = (int)(255 * cos(radians));
-    int y_comp = (int)(255 * sin(radians));
-    motors->left_motors = max(-255, min(x_comp + y_comp, 255));
-    motors->right_motors = max(-255, min(x_comp - y_comp, 255));
+    int x_comp = (int)(SCALE * cos(radians));
+    int y_comp = (int)(SCALE * sin(radians));
+    motors->left_motors = max(-SCALE , min(x_comp + y_comp, SCALE));
+    motors->right_motors = max(-SCALE , min(x_comp - y_comp, SCALE));
 }
