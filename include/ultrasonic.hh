@@ -20,7 +20,7 @@ public:
     uint32_t _echo_end = 0;
     uint32_t _start_time = 0;
     uint32_t _last_time = 0;
-    sonar_state_t _sonar = IDLE;
+    sonar_state_t _state = IDLE;
 
     void (*_isr_rise)(void);
     void (*_isr_fall)(void);
@@ -35,6 +35,8 @@ public:
 };
 
 void setup_ultrasonic_pins(Ultrasonic &ultrasonic);
+void poll_ultrasonic(Ultrasonic &ultrasonic);
+uint32_t pull_ultrasonic(Ultrasonic &ultrasonic);
 
 void ultrasonic1_rise();
 void ultrasonic1_fall();

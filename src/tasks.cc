@@ -200,7 +200,7 @@ void update_motors(void *params) {
     for (;;) {
         if (uno_serial.available()) {
             String buffer = uno_serial.readStringUntil('\n');
-            Serial.printf("%s\n", buffer);
+            Serial.println(buffer);
 #ifdef IS_HALTING
             if ((buffer != "ok") || (buffer != "ok\n")) stop_operations();
 #endif
@@ -229,17 +229,22 @@ void update_motors(void *params) {
 void get_distances(void *params) {
     user_logger(get_distances_tag, "Waiting for the rest to init.");
     setup_ultrasonic_pins(ultrasonic1);
-    //setup_ultrasonic_pins(ultrasonic1);
-    //setup_ultrasonic_pins(ultrasonic1);
+    setup_ultrasonic_pins(ultrasonic2);
+    setup_ultrasonic_pins(ultrasonic3);
     vTaskDelay(pdMS_TO_TICKS(2000));
 
     for (;;) {
 #ifdef ULTRASONIC_ON
-        sensors_state.distance_1 = distance_1.pingCM();
+        sensors_state.distance_3 = pull_ultrasonic(ultrasonic3);
+        poll_ultrasonic(ultrasonic1);
         vTaskDelay(pdMS_TO_TICKS(50));
-        sensors_state.distance_2 = distance_2.pingCM();
+
+        sensors_state.distance_1 = pull_ultrasonic(ultrasonic1);
+        poll_ultrasonic(ultrasonic2);
         vTaskDelay(pdMS_TO_TICKS(50));
-        sensors_state.distance_3 = distance_3.pingCM();
+
+        sensors_state.distance_2 = pull_ultrasonic(ultrasonic2);
+        poll_ultrasonic(ultrasonic3);
         vTaskDelay(pdMS_TO_TICKS(50));
 #else
         vTaskDelay(pdMS_TO_TICKS(1000));
