@@ -1,5 +1,7 @@
 #include "ultrasonic.hh"
 
+constexpr uint32_t ULTRASONIC_TIMEOUT_MS = 100;
+
 extern Ultrasonic ultrasonic1;
 extern Ultrasonic ultrasonic2;
 extern Ultrasonic ultrasonic3;
@@ -34,9 +36,10 @@ void setup_ultrasonic_pins(Ultrasonic &ultrasonic) {
 }
 
 void poll_ultrasonic(Ultrasonic &ultrasonic) {
+    uint32_t now = millis();
     switch (ultrasonic._state) {
         case IDLE: {
-            ultrasonic._start_time = millis();
+            ultrasonic._start_time = now;
 
             digitalWrite(ultrasonic._trig_pin, LOW);
             delayMicroseconds(2);
@@ -51,14 +54,22 @@ void poll_ultrasonic(Ultrasonic &ultrasonic) {
             break;
         }
         case WAIT_FALL: {
+            if (now - ultrasonic._start_time > ULTRASONIC_TIMEOUT_MS) {
+                ultrasonic._state = IDLE;
+                ultrasonic._reading = UINT32_MAX;
+            }
             break;
         }
     }
 }
 
 uint32_t pull_ultrasonic(Ultrasonic &ultrasonic) {
+    if (ultrasonic._state != IDLE) {
+        return ultrasonic._reading;
+    }
     uint32_t duration = ultrasonic._echo_end - ultrasonic._echo_start;
-    return (duration * 0.034 / 2);
+    ultrasonic._reading = duration * 0.034 / 2;
+    return ultrasonic._reading;
 }
 
 

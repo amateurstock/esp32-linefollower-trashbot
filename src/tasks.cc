@@ -4,9 +4,11 @@
 #include "ultrasonic.hh"
 #include <cstdio>
 
-#define K_P 4.0
-#define K_I 0.0
-#define K_D 0.0
+constexpr float K_P = 4.0;
+constexpr float K_I = 0.0;
+constexpr float K_D = 0.1;
+constexpr uint32_t WEIGHT_THRESHOLD = 2048;
+constexpr uint32_t BATTERY_THRESHOLD = 255;
 
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
@@ -133,7 +135,7 @@ esp_err_t init_tasks() {
         "get_analogs task",
         4096,
         NULL,
-        6,
+        1,
         &get_analogs_t
     );
     if (get_analogs_t == NULL) {
@@ -177,7 +179,6 @@ esp_err_t init_tasks() {
 void read_line_sensors(void *params) {
     user_logger(read_line_sensors_tag, "Waiting for the rest to init.");
     vTaskDelay(pdMS_TO_TICKS(2000));
-
     for (;;) {
         uint8_t b0 = digitalRead(LINE_1);
         uint8_t b1 = digitalRead(LINE_2) << 1;
@@ -194,34 +195,26 @@ void update_motors(void *params) {
     float error = 0;
     float delta = 0;
     char buf[32] = {0};
+    String buffer;
     vTaskDelay(pdMS_TO_TICKS(2000));
-
     pid_controller.set_start_time(millis());
     for (;;) {
         if (uno_serial.available()) {
-            String buffer = uno_serial.readStringUntil('\n');
+            buffer = uno_serial.readStringUntil('\n');
             Serial.println(buffer);
-#ifdef IS_HALTING
-            if ((buffer != "ok") || (buffer != "ok\n")) stop_operations();
-#endif
         }
-
-        error = (
-            ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
-            ( 2.0f * fetch_bit(sensors_state.line_state, 1)) +
-            (-2.0f * fetch_bit(sensors_state.line_state, 2)) +
-            (-6.0f * fetch_bit(sensors_state.line_state, 3)))
-            /
-            (float)(count_highs(sensors_state.line_state)
-        );
+        error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
+                  ( 2.0f * fetch_bit(sensors_state.line_state, 1)) +
+                  (-2.0f * fetch_bit(sensors_state.line_state, 2)) +
+                  (-6.0f * fetch_bit(sensors_state.line_state, 3)))
+                  /
+                  (float)(count_highs(sensors_state.line_state) );
         delta = pid_controller.calculate(error, millis());
         delta_steering(&motors, delta);
-
         sprintf(buf, "L:%d;R:%d;\n", motors.left_motors, motors.right_motors);
-        //sprintf(buf, "L:100;R:100;\n");
         uno_serial.print(buf);
-
         memset(buf, 0, sizeof(buf));
+
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
@@ -232,36 +225,31 @@ void get_distances(void *params) {
     setup_ultrasonic_pins(ultrasonic2);
     setup_ultrasonic_pins(ultrasonic3);
     vTaskDelay(pdMS_TO_TICKS(2000));
-
     for (;;) {
 #ifdef ULTRASONIC_ON
         sensors_state.distance_3 = pull_ultrasonic(ultrasonic3);
         poll_ultrasonic(ultrasonic1);
         vTaskDelay(pdMS_TO_TICKS(50));
-
         sensors_state.distance_1 = pull_ultrasonic(ultrasonic1);
         poll_ultrasonic(ultrasonic2);
         vTaskDelay(pdMS_TO_TICKS(50));
-
         sensors_state.distance_2 = pull_ultrasonic(ultrasonic2);
         poll_ultrasonic(ultrasonic3);
         vTaskDelay(pdMS_TO_TICKS(50));
 #else
         vTaskDelay(pdMS_TO_TICKS(1000));
 #endif
-
     }
 }
 
 void get_analogs(void *params) {
     user_logger(get_analogs_tag, "Waiting for the rest to init.");
     vTaskDelay(pdMS_TO_TICKS(2000));
-
     for (;;) {
         sensors_state.VB_out = analogRead(VB_PIN);
         sensors_state.weight_out = analogRead(WEIGHT_PIN);
-        vTaskDelay(pdMS_TO_TICKS(1000));
 
+        vTaskDelay(pdMS_TO_TICKS(1000));
 #ifdef IS_HALTING
         if (sensors_state.weight_out >= WEIGHT_THRESHOLD
         || sensors_state.VB_out <= BATTERY_THRESHOLD) {
@@ -269,31 +257,25 @@ void get_analogs(void *params) {
             stop_operations();
         }
 #endif
-
     }
 }
 
 void update_servos(void *param) {
     user_logger(update_servos_tag, "Waiting for the rest to init.");
     vTaskDelay(pdMS_TO_TICKS(2000));
-
     for (;;) {
         analogWrite(ARM_1, motors.servo_out1);
         analogWrite(ARM_2, motors.servo_out2);
         analogWrite(ARM_3, motors.servo_out3);
         analogWrite(ARM_4, motors.servo_out4);
         vTaskDelay(pdMS_TO_TICKS(8));
-
-
     }
-
 }
 
 #ifdef PRINT_DBG
 void print_debug(void *param) {
     user_logger(print_debug_tag, "Waiting for the rest to init.");
     vTaskDelay(pdMS_TO_TICKS(2000));
-
     for (;;) {
         Serial.printf("<%d> || ", millis());
         Serial.printf("line_state = %d || ", sensors_state.line_state);
@@ -376,5 +358,5 @@ void stop_operations() {
     taskDISABLE_INTERRUPTS();
     vTaskSuspendAll();
 
-    for (;;) {}
+    for (;;) { }
 }

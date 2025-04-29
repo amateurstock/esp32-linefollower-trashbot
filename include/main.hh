@@ -11,10 +11,8 @@
 // Macros
 #define PRINT_DBG
 //#define WIFI_DBG
-//#define ULTRASONIC_ON
+#define ULTRASONIC_ON
 //#define IS_HALTING
-#define WEIGHT_THRESHOLD 2048 // Arbitrary numbers. change at will
-#define BATTERY_THRESHOLD 255 // This one too.
 
 // RTOS related
 esp_err_t init_tasks();
@@ -23,7 +21,6 @@ void update_motors(void *params);
 void get_distances(void *params);
 void get_analogs(void *params);
 void update_servos(void *param);
-
 #ifdef PRINT_DBG
 void print_debug(void *param);
 #endif
@@ -48,7 +45,7 @@ typedef struct {
     uint32_t distance_3;
     uint16_t weight_out;
     uint16_t VB_out;
-}sensors_t;
+} sensors_t;
 
 typedef struct {
     int16_t left_motors;
