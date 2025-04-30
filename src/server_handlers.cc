@@ -32,9 +32,19 @@ esp_err_t scripts_handler(httpd_req_t *req) {
 esp_err_t updates_handler(httpd_req_t *req) {
     const char *TAG = "updates_handler";
 
+    char buf[256] = {0};
+    uint32_t len = 1 + sprintf(buf, 
+                               "linestate:%d;distance1:%d;distance2:%d;distance3:%d;",
+                               sensors_state.line_state,
+                               sensors_state.distance_1,
+                               sensors_state.distance_2,
+                               sensors_state.distance_3
+                               );
+
     // Try to figure out how to send data or something idk...
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    return httpd_resp_send(req, NULL, 0);
+    httpd_resp_set_type(req, "text/text");
+    return httpd_resp_send(req, buf, len);
 }
 
 esp_err_t servos_handler(httpd_req_t *req) {
