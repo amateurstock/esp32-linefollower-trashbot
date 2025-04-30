@@ -51,11 +51,11 @@ typedef struct {
 typedef struct {
     int16_t left_motors;
     int16_t right_motors;
-    uint8_t servo_out1;
-    uint8_t servo_out2;
-    uint8_t servo_out3;
-    uint8_t servo_out4;
-}motors_t;
+    uint16_t servo_out1;
+    uint16_t servo_out2;
+    uint16_t servo_out3;
+    uint16_t servo_out4;
+} motors_t;
 
 
 // Pin names

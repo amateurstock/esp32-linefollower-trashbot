@@ -1,4 +1,5 @@
 #include "main.hh"
+#include <ESP32Servo.h>
 #include "motors_control.hh"
 #include "pid.hh"
 #include "ultrasonic.hh"
@@ -9,6 +10,7 @@ constexpr float K_I = 0.0;
 constexpr float K_D = 0.1;
 constexpr uint32_t WEIGHT_THRESHOLD = 2048;
 constexpr uint32_t BATTERY_THRESHOLD = 255;
+constexpr uint8_t SERVO_TIMER = 0;
 
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
@@ -35,6 +37,10 @@ const char *print_debug_tag = "print_debug";
 // OOP constructors
 HardwareSerial uno_serial(2);
 PID pid_controller(K_P, K_I, K_D, 0);
+Servo servo1;
+Servo servo2;
+Servo servo3;
+Servo servo4;
 Ultrasonic ultrasonic1 (
     SHARED_TRIG,
     ECHO_1,
@@ -266,12 +272,17 @@ void get_analogs(void *params) {
 
 void update_servos(void *param) {
     user_logger(update_servos_tag, "Waiting for the rest to init.");
+    ESP32PWM::allocateTimer(SERVO_TIMER);
+    servo1.setPeriodHertz(50); servo1.attach(ARM_1);
+    servo2.setPeriodHertz(50); servo2.attach(ARM_2);
+    servo3.setPeriodHertz(50); servo3.attach(ARM_3);
+    servo4.setPeriodHertz(50); servo4.attach(ARM_4);
     vTaskDelay(pdMS_TO_TICKS(2000));
     for (;;) {
-        analogWrite(ARM_1, motors.servo_out1);
-        analogWrite(ARM_2, motors.servo_out2);
-        analogWrite(ARM_3, motors.servo_out3);
-        analogWrite(ARM_4, motors.servo_out4);
+        servo1.writeMicroseconds(motors.servo_out1);
+        servo2.writeMicroseconds(motors.servo_out2);
+        servo3.writeMicroseconds(motors.servo_out3);
+        servo4.writeMicroseconds(motors.servo_out4);
         vTaskDelay(pdMS_TO_TICKS(8));
     }
 }

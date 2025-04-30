@@ -7,6 +7,9 @@ extern const char *js_path;
 extern sensors_t sensors_state;
 extern motors_t motors;
 
+constexpr uint16_t MIN_ANGLE = 0;
+constexpr uint16_t MAX_ANGLE = 270;
+
 esp_err_t index_handler(httpd_req_t *req) {
     const char *TAG = "index_handler";
 
@@ -62,24 +65,10 @@ esp_err_t servos_handler(httpd_req_t *req) {
 
     free(buf);
 
-    uint16_t _servo1 = atoi(s1);
-    uint16_t _servo2 = atoi(s2);
-    uint16_t _servo3 = atoi(s3);
-    uint16_t _servo4 = atoi(s4);
-
-    motors.servo_out1 = map(_servo1, 0, 270, 0, UINT8_MAX);
-    motors.servo_out2 = map(_servo2, 0, 270, 0, UINT8_MAX);
-    motors.servo_out3 = map(_servo3, 0, 270, 0, UINT8_MAX);
-    motors.servo_out4 = map(_servo4, 0, 270, 0, UINT8_MAX);
-
-
-#ifdef PRINTDB
-    Serial.printf("s1: %03d, s2: %03d, s3: %03d, s4: %03d\n",
-                  motors.servo_out1,
-                  motors.servo_out2,
-                  motors.servo_out3,
-                  motors.servo_out4);
-#endif
+    motors.servo_out1 = map(atoi(s1), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
+    motors.servo_out2 = map(atoi(s2), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
+    motors.servo_out3 = map(atoi(s3), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
+    motors.servo_out4 = map(atoi(s4), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     return httpd_resp_send(req, NULL, 0);
