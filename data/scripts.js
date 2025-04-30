@@ -28,13 +28,22 @@ function sendInputs() {
         });
 }
 
-function startSendingInputs(interval) {
+function getUpdates() {
+    const query = `${baseHost}/updates`;
+    fetch(query)
+        .then(response => {
+        console.log(`Updates: ${response.text}`)
+        });
+}
+
+function startSendingQueries(interval) {
     if (intervalID) {
         clearInterval(intervalID);
     }
 
     intervalID = setInterval(() => {
         sendInputs();
+        getUpdates();
     }, interval);
 
     console.log("Sending data at", interval, "ms.");
@@ -62,4 +71,4 @@ var servo2 = new servoSlider("servo2", "out2");
 var servo3 = new servoSlider("servo3", "out3");
 var servo4 = new servoSlider("servo4", "out4");
 
-startSendingInputs(100);
+startSendingQueries(100);
