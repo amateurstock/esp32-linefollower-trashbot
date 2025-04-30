@@ -81,33 +81,45 @@ uint32_t pull_ultrasonic(Ultrasonic &ultrasonic) {
 
 // ultrasonic1
 void IRAM_ATTR ultrasonic1_rise() {
-    ultrasonic1._echo_start = micros();
-    ultrasonic1._state = WAIT_FALL;
+    if (ultrasonic1._state == WAIT_RISE) {
+        ultrasonic1._echo_start = micros();
+        ultrasonic1._state = WAIT_FALL;
+    }
 }
 void IRAM_ATTR ultrasonic1_fall() {
-    ultrasonic1._echo_end = micros();
-    ultrasonic1._state = IDLE;
-    ultrasonic1._last_time = millis();
+    if (ultrasonic1._state == WAIT_FALL) {
+        ultrasonic1._echo_end = micros();
+        ultrasonic1._state = IDLE;
+        ultrasonic1._last_time = millis();
+    }
 }
 
 // ultrasonic2
 void IRAM_ATTR ultrasonic2_rise() {
-    ultrasonic2._echo_start = micros();
-    ultrasonic2._state = WAIT_FALL;
+    if (ultrasonic2._state == WAIT_RISE) {
+        ultrasonic2._echo_start = micros();
+        ultrasonic2._state = WAIT_FALL;
+    }
 }
 void IRAM_ATTR ultrasonic2_fall() {
-    ultrasonic2._echo_end = micros();
-    ultrasonic2._state = IDLE;
-    ultrasonic2._last_time = millis();
+    if (ultrasonic2._state == WAIT_FALL) {
+        ultrasonic2._echo_end = micros();
+        ultrasonic2._state = IDLE;
+        ultrasonic2._last_time = millis();
+    }
 }
 
 // ultrasonic3
 void IRAM_ATTR ultrasonic3_rise() {
-    ultrasonic3._echo_start = micros();
-    ultrasonic3._state = WAIT_FALL;
+    if (ultrasonic3._state == WAIT_RISE) {
+        ultrasonic3._echo_start = micros();
+        ultrasonic3._state = WAIT_FALL;
+    }
 }
 void IRAM_ATTR ultrasonic3_fall() {
-    ultrasonic3._echo_end = micros();
-    ultrasonic3._state = IDLE;
-    ultrasonic3._last_time = millis();
+    if (ultrasonic3._state == WAIT_FALL) {
+        ultrasonic3._echo_end = micros();
+        ultrasonic3._state = IDLE;
+        ultrasonic3._last_time = millis();
+    }
 }

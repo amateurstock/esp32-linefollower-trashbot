@@ -199,6 +199,7 @@ void update_motors(void *params) {
     vTaskDelay(pdMS_TO_TICKS(2000));
     pid_controller.set_start_time(millis());
     for (;;) {
+#ifdef MOTORS_ON
         if (uno_serial.available()) {
             buffer = uno_serial.readStringUntil('\n');
             Serial.println(buffer);
@@ -216,6 +217,7 @@ void update_motors(void *params) {
         memset(buf, 0, sizeof(buf));
 
         vTaskDelay(pdMS_TO_TICKS(10));
+#endif
     }
 }
 
@@ -246,8 +248,10 @@ void get_analogs(void *params) {
     user_logger(get_analogs_tag, "Waiting for the rest to init.");
     vTaskDelay(pdMS_TO_TICKS(2000));
     for (;;) {
+#ifndef WIFI_DBG
         sensors_state.VB_out = analogRead(VB_PIN);
         sensors_state.weight_out = analogRead(WEIGHT_PIN);
+#endif
 
         vTaskDelay(pdMS_TO_TICKS(1000));
 #ifdef IS_HALTING

@@ -10,8 +10,9 @@
 
 // Macros
 #define PRINT_DBG
-//#define WIFI_DBG
+#define WIFI_DBG
 #define ULTRASONIC_ON
+#define MOTORS_ON
 //#define IS_HALTING
 
 // RTOS related
