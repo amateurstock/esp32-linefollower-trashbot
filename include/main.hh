@@ -57,7 +57,6 @@ typedef struct {
     uint16_t servo_out4;
 } motors_t;
 
-
 // Pin names
 // |--- Line Sensors
 #define LINE_1 32

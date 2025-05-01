@@ -1,11 +1,13 @@
 #include "main.hh"
 #include "server_handlers.hh"
+#include "pid.hh"
 
 extern const char *root_dir;
 extern const char *html_path;
 extern const char *js_path;
 extern sensors_t sensors_state;
 extern motors_t motors;
+extern PID pid_controller;
 
 constexpr uint16_t MIN_ANGLE = 0;
 constexpr uint16_t MAX_ANGLE = 180;
@@ -39,11 +41,14 @@ esp_err_t updates_handler(httpd_req_t *req) {
 
     char buf[256] = {0};
     uint32_t len = sprintf(buf, 
-                           "linestate:%d;distance1:%d;distance2:%d;distance3:%d;",
+                           "linestate:%d;distance1:%d;distance2:%d;distance3:%d;KP:%f;KI:%f;KD:%f",
                            sensors_state.line_state,
                            sensors_state.distance_1,
                            sensors_state.distance_2,
-                           sensors_state.distance_3
+                           sensors_state.distance_3,
+                           pid_controller.get_k_p(),
+                           pid_controller.get_k_i(),
+                           pid_controller.get_k_d()
                            );
 
     // Try to figure out how to send data or something idk...
@@ -59,6 +64,9 @@ esp_err_t servos_handler(httpd_req_t *req) {
     char s2[32];
     char s3[32];
     char s4[32];
+    char kp[32];
+    char ki[32];
+    char kd[32];
 
     if (parse_get(req, &buf) != ESP_OK) {
         user_logger(TAG, "Failed to parse request query.\n");
@@ -68,7 +76,10 @@ esp_err_t servos_handler(httpd_req_t *req) {
     if (httpd_query_key_value(buf, "s1", s1, sizeof(s1)) != ESP_OK
         || httpd_query_key_value(buf, "s2", s2, sizeof(s2)) != ESP_OK
         || httpd_query_key_value(buf, "s3", s3, sizeof(s3)) != ESP_OK
-        || httpd_query_key_value(buf, "s4", s4, sizeof(s4)) != ESP_OK) {
+        || httpd_query_key_value(buf, "s4", s4, sizeof(s4)) != ESP_OK
+        || httpd_query_key_value(buf, "kp", kp, sizeof(kp)) != ESP_OK
+        || httpd_query_key_value(buf, "ki", ki, sizeof(ki)) != ESP_OK
+        || httpd_query_key_value(buf, "kd", kd, sizeof(kd)) != ESP_OK) {
         free(buf);
         httpd_resp_send_404(req);
         return ESP_FAIL;
@@ -80,6 +91,7 @@ esp_err_t servos_handler(httpd_req_t *req) {
     motors.servo_out2 = map(atoi(s2), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
     motors.servo_out3 = map(atoi(s3), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
     motors.servo_out4 = map(atoi(s4), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
+    pid_controller.set_pid_values(atof(kp), atof(ki), atof(kd));
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     return httpd_resp_send(req, NULL, 0);

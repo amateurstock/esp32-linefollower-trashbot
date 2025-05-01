@@ -45,3 +45,17 @@ float PID::get_dt(uint32_t current_time) {
 void PID::set_start_time(uint32_t current_time) {
     _previous_time = current_time;
 }
+
+void PID::set_pid_values(
+    float k_p,
+    float k_i,
+    float k_d
+) {
+    _k_p = k_p;
+    _k_i = k_i;
+    _k_d = k_d;
+}
+
+float PID::get_k_p() { return _k_p; }
+float PID::get_k_i() { return _k_i; }
+float PID::get_k_d() { return _k_d; }

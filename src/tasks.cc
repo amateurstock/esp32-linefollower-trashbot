@@ -12,6 +12,11 @@ constexpr uint32_t WEIGHT_THRESHOLD = 2048;
 constexpr uint32_t BATTERY_THRESHOLD = 255;
 constexpr uint8_t SERVO_TIMER = 0;
 
+constexpr uint32_t ARM1_INIT = 1000;
+constexpr uint32_t ARM2_INIT = 1000;
+constexpr uint32_t ARM3_INIT = 1000;
+constexpr uint32_t ARM4_INIT = 1000;
+
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
 TaskHandle_t update_motors_t = NULL;
@@ -63,9 +68,9 @@ Ultrasonic ultrasonic3 (
 // Typedefs
 sensors_t sensors_state{
     .line_state = 0b0000,
-    .distance_1 = 0,
-    .distance_2 = 0,
-    .distance_3 = 0,
+    .distance_1 = UINT32_MAX,
+    .distance_2 = UINT32_MAX,
+    .distance_3 = UINT32_MAX,
     .weight_out = 0,
     .VB_out = 0
 };
@@ -73,10 +78,10 @@ sensors_t sensors_state{
 motors_t motors {
     .left_motors = 0,
     .right_motors = 0,
-    .servo_out1 = 0,
-    .servo_out2 = 0,
-    .servo_out3 = 0,
-    .servo_out4 = 0,
+    .servo_out1 = ARM1_INIT,
+    .servo_out2 = ARM2_INIT,
+    .servo_out3 = ARM3_INIT,
+    .servo_out4 = ARM4_INIT,
 };
 
 

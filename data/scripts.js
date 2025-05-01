@@ -34,7 +34,9 @@ var distance2 = updates.distance2;
 var distance3 = updates.distance3;
 
 function sendInputs() {
-    const query = `${baseHost}/servos?s1=${servo1.val}&s2=${servo2.val}&s3=${servo3.val}&s4=${servo4.val}`;
+    const servo1_val = servo1.val;
+    const servo4_val = 180 - servo1.val;
+    const query = `${baseHost}/servos?s1=${servo1_val}&s2=${servo2.val}&s3=${servo3.val}&s4=${servo4_val}&kp=${kp.val}&ki=${ki.val}&kd=${kd.val}`;
     console.log(query);
     fetch(query)
         .then(response => {
@@ -85,6 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
 var servo1 = new servoSlider("servo1", "out1");
 var servo2 = new servoSlider("servo2", "out2");
 var servo3 = new servoSlider("servo3", "out3");
-var servo4 = new servoSlider("servo4", "out4");
+var kp = new servoSlider("kp", "kp_out");
+var ki = new servoSlider("ki", "ki_out");
+var kd = new servoSlider("kd", "kd_out");
 
-//startSendingQueries(100);
+startSendingQueries(100);

@@ -31,6 +31,16 @@ public:
     );
 
     void set_start_time(uint32_t current_time);
+
+    void set_pid_values(
+        float k_p,
+        float k_i,
+        float k_d
+    );
+
+    float get_k_p();
+    float get_k_i();
+    float get_k_d();
 };
 
 #endif
