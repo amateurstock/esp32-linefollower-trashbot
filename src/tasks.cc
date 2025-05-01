@@ -45,21 +45,18 @@ Ultrasonic ultrasonic1 (
     SHARED_TRIG,
     ECHO_1,
     100,
-    ultrasonic1_rise,
     ultrasonic1_fall
 );
 Ultrasonic ultrasonic2 (
     SHARED_TRIG,
     ECHO_2,
     100,
-    ultrasonic2_rise,
     ultrasonic2_fall
 );
 Ultrasonic ultrasonic3 (
     SHARED_TRIG,
     ECHO_3,
     100,
-    ultrasonic3_rise,
     ultrasonic3_fall
 );
 

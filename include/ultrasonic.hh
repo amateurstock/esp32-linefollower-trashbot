@@ -5,7 +5,6 @@
 
 typedef enum {
     IDLE,
-    WAIT_RISE,
     WAIT_FALL
 } sonar_state_t;
 
@@ -22,14 +21,12 @@ public:
     uint32_t _last_time = 0;
     sonar_state_t _state = IDLE;
 
-    void (*_isr_rise)(void);
     void (*_isr_fall)(void);
 
     Ultrasonic(
         uint8_t trig_pin,
         uint8_t echo_pin,
         uint32_t max_distance,
-        void (*isr_rise)(void),
         void (*isr_fall)(void)
     );
 };
@@ -38,13 +35,8 @@ void setup_ultrasonic_pins(Ultrasonic &ultrasonic);
 void poll_ultrasonic(Ultrasonic &ultrasonic);
 uint32_t pull_ultrasonic(Ultrasonic &ultrasonic);
 
-void ultrasonic1_rise();
 void ultrasonic1_fall();
-
-void ultrasonic2_rise();
 void ultrasonic2_fall();
-
-void ultrasonic3_rise();
 void ultrasonic3_fall();
 
 #endif
