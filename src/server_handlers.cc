@@ -8,7 +8,9 @@ extern sensors_t sensors_state;
 extern motors_t motors;
 
 constexpr uint16_t MIN_ANGLE = 0;
-constexpr uint16_t MAX_ANGLE = 270;
+constexpr uint16_t MAX_ANGLE = 180;
+constexpr uint16_t MIN_US = 500;
+constexpr uint16_t MAX_US = 2500;
 
 esp_err_t index_handler(httpd_req_t *req) {
     const char *TAG = "index_handler";
@@ -36,17 +38,16 @@ esp_err_t updates_handler(httpd_req_t *req) {
     const char *TAG = "updates_handler";
 
     char buf[256] = {0};
-    uint32_t len = 1 + sprintf(buf, 
-                               "linestate:%d;distance1:%d;distance2:%d;distance3:%d;",
-                               sensors_state.line_state,
-                               sensors_state.distance_1,
-                               sensors_state.distance_2,
-                               sensors_state.distance_3
-                               );
+    uint32_t len = sprintf(buf, 
+                           "linestate:%d;distance1:%d;distance2:%d;distance3:%d;",
+                           sensors_state.line_state,
+                           sensors_state.distance_1,
+                           sensors_state.distance_2,
+                           sensors_state.distance_3
+                           );
 
     // Try to figure out how to send data or something idk...
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/text");
+    httpd_resp_set_type(req, "text/plain");
     return httpd_resp_send(req, buf, len);
 }
 
@@ -75,10 +76,10 @@ esp_err_t servos_handler(httpd_req_t *req) {
 
     free(buf);
 
-    motors.servo_out1 = map(atoi(s1), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
-    motors.servo_out2 = map(atoi(s2), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
-    motors.servo_out3 = map(atoi(s3), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
-    motors.servo_out4 = map(atoi(s4), MIN_ANGLE, MAX_ANGLE, 1000, 2000);
+    motors.servo_out1 = map(atoi(s1), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
+    motors.servo_out2 = map(atoi(s2), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
+    motors.servo_out3 = map(atoi(s3), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
+    motors.servo_out4 = map(atoi(s4), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     return httpd_resp_send(req, NULL, 0);
