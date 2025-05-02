@@ -1,6 +1,6 @@
 #include "motors_control.hh"
 
-#define SCALE 192
+#define SCALE 128
 
 void delta_steering(motors_t *motors, float delta) {
     float degrees = 7.5f * delta;

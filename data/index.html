@@ -69,6 +69,25 @@ body {
     width: 100%;
 }
 
+.lineStateContainer {
+    width: 100%;
+    height: 10%;
+    display: flex;
+}
+
+.lineState {
+    background: red;
+    border: 5px solid black;
+    height: 100%;
+    width: 25%;
+}
+
+.distanceContainer{
+    display: flex;
+    width: 100%;
+    height: 10%;
+    background: #8cc;
+}
         </style>
         <title>Shortcircuiteers LFTB</title>
         <link rel="icon" type="image/png" href="favicon.png">
@@ -92,19 +111,38 @@ body {
 
                 <div class="servoContainer">
                     <div class="sliderContainer">
-                        <input type="range" min="1" max="180" value="1" class="slider" id="servo2">
+                        <input type="range" min="1" max="180" value="135" class="slider" id="servo2">
                     </div>
                     <div class="servoPosContainer">
                         <p class="servoPos"><span id="out2"></span>°</p>
                     </div>
                 </div>
 
-                <div class="servoContainer">
+                <div style="width:100%;background:#8ab">
+                    <h3 style="width:100%;text-align:center">PID Control</h3>
+                </div>
+                <div class="pidContainer">
                     <div class="sliderContainer">
-                        <input type="range" min="1" max="180" value="1" class="slider" id="servo3">
+                        <input type="range" min="0.0" max="4.0" value="4" step="0.01" class="slider" id="kp">
                     </div>
                     <div class="servoPosContainer">
-                        <p class="servoPos"><span id="out3"></span>°</p>
+                        <p class="servoPos"><span id="kp_out"></span> KP</p>
+                    </div>
+                </div>
+                <div class="pidContainer">
+                    <div class="sliderContainer">
+                        <input type="range" min="0.0" max="1.0" value="0" step="0.01" class="slider" id="ki">
+                    </div>
+                    <div class="servoPosContainer">
+                        <p class="servoPos"><span id="ki_out"></span> KI</p>
+                    </div>
+                </div>
+                <div class="pidContainer">
+                    <div class="sliderContainer">
+                        <input type="range" min="0.0" max="1.0" value="0" step="0.01" class="slider" id="kd">
+                    </div>
+                    <div class="servoPosContainer">
+                        <p class="servoPos"><span id="kd_out"></span> KD</p>
                     </div>
                 </div>
 
@@ -113,33 +151,36 @@ body {
 
 
             <div class="infoBox">
+
                 <div style="width:100%;background:#8ab">
-                    <h3 style="width:100%;text-align:center">PID Control</h3>
+                    <h3 style="width:100%;text-align:center">Line State</h3>
                 </div>
-                <div class="pidContainer">
-                    <div class="sliderContainer">
-                        <input type="range" min="0.0" max="4.0" value="1" step="0.01" class="slider" id="kp">
+                <div class="lineStateContainer">
+                    <div class="lineState" id="line1">
                     </div>
-                    <div class="servoPosContainer">
-                        <p class="servoPos"><span id="kp_out"></span> KP</p>
+                    <div class="lineState" id="line2">
                     </div>
-                </div>
-                <div class="pidContainer">
-                    <div class="sliderContainer">
-                        <input type="range" min="0.0" max="1.0" value="1" step="0.01" class="slider" id="ki">
+                    <div class="lineState" id="line3">
                     </div>
-                    <div class="servoPosContainer">
-                        <p class="servoPos"><span id="ki_out"></span> KI</p>
+                    <div class="lineState" id="line4">
                     </div>
                 </div>
-                <div class="pidContainer">
-                    <div class="sliderContainer">
-                        <input type="range" min="0.0" max="1.0" value="1" step="0.01" class="slider" id="kd">
-                    </div>
-                    <div class="servoPosContainer">
-                        <p class="servoPos"><span id="kd_out"></span> KD</p>
-                    </div>
+
+                <div style="width:100%;background:#8ab">
+                    <h3 style="width:100%;text-align:center">Distance Readings</h3>
                 </div>
+
+                <div class="distanceContainer">
+                    <p class="servoPos"><span id="distances_out"></span></p>
+                </div>
+
+                <div style="width:100%;background:#8ab">
+                    <h3 style="width:100%;text-align:center">Motor State</h3>
+                </div>
+
+
+
+
             </div>
         </div>
         <script src="scripts.js"></script>

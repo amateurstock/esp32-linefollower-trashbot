@@ -1,24 +1,37 @@
-class servoSlider {
+class ServoSlider {
     constructor (
         servoID,
         outputID
     ) {
         this.name = servoID;
-        this.servoSliderObj = document.getElementById(servoID);
+        this.ServoSliderObj = document.getElementById(servoID);
         this.outputObj = document.getElementById(outputID);
-        this.outputObj.innerHTML = this.servoSliderObj.value;
-        this.val = Number(this.servoSliderObj.value);
+        this.outputObj.innerHTML = this.ServoSliderObj.value;
+        this.val = Number(this.ServoSliderObj.value);
 
-        this.servoSliderObj.oninput = () => {
-            this.val = Number(this.servoSliderObj.value);
+        this.ServoSliderObj.oninput = () => {
+            this.val = Number(this.ServoSliderObj.value);
             this.outputObj.innerHTML = this.val;
         }
     }
 }
 
+class LineState {
+    constructor(lineID) {
+        this.name = lineID;
+        this.LineStateObj = document.getElementById(lineID);
+        this.LineStateObj.style.background = "red";
+    }
+
+    update(state) {
+        if (state == true) this.LineStateObj.style.background = "green";
+        else this.LineStateObj.style.background = "red";
+    }
+}
+
 var baseHost;
 var intervalID = null;
-var updatesBuffer = "linestate:0;distance1:-1;distance2:-1;distance3:-1;";
+var updatesBuffer = "linestate:0;distance1:-1;distance2:-1;distance3:-1;KP:4.0;KI:0.0;KD:0.0";
 var updates = Object.fromEntries(
     updatesBuffer.split(';')
         .filter(entry => entry)
@@ -28,15 +41,12 @@ var updates = Object.fromEntries(
         })
 );
 
-var linestate = updates.linestate;
-var distance1 = updates.distance1;
-var distance2 = updates.distance2;
-var distance3 = updates.distance3;
-
 function sendInputs() {
     const servo1_val = servo1.val;
+    const servo2_val = servo2.val;
+    const servo3_val = 180 - servo2.val;
     const servo4_val = 180 - servo1.val;
-    const query = `${baseHost}/servos?s1=${servo1_val}&s2=${servo2.val}&s3=${servo3.val}&s4=${servo4_val}&kp=${kp.val}&ki=${ki.val}&kd=${kd.val}`;
+    const query = `${baseHost}/servos?s1=${servo1_val}&s2=${servo2_val}&s3=${servo3_val}&s4=${servo4_val}&kp=${kp.val}&ki=${ki.val}&kd=${kd.val}`;
     console.log(query);
     fetch(query)
         .then(response => {
@@ -62,6 +72,7 @@ function startSendingQueries(interval) {
     intervalID = setInterval(() => {
         sendInputs();
         getUpdates();
+        reportValues();
     }, interval);
 
     console.log("Sending data at", interval, "ms.");
@@ -75,6 +86,30 @@ function stopSending() {
     }
 }
 
+function isLineOn(val, pos) {
+    const binary = Number(val);
+    const test = ((binary >> pos) & 1);
+    if (test == 1) return true;
+    else return false;
+}
+
+function reportValues() {
+    // Linestate
+    const l1 = isLineOn(updates.linestate, 0);
+    const l2 = isLineOn(updates.linestate, 1);
+    const l3 = isLineOn(updates.linestate, 2);
+    const l4 = isLineOn(updates.linestate, 3);
+
+    line1.update(l1);
+    line2.update(l2);
+    line3.update(l3);
+    line4.update(l4);
+
+    // Distances
+    const distance_buffer = `Distance 1: ${updates.distance1} || Distance 2: ${updates.distance2} || Distance 3: ${updates.distance3}`;
+    distances_out.innerHTML = distance_buffer;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     baseHost = document.location.origin;
 });
@@ -84,11 +119,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Main program
 
-var servo1 = new servoSlider("servo1", "out1");
-var servo2 = new servoSlider("servo2", "out2");
-var servo3 = new servoSlider("servo3", "out3");
-var kp = new servoSlider("kp", "kp_out");
-var ki = new servoSlider("ki", "ki_out");
-var kd = new servoSlider("kd", "kd_out");
+var servo1 = new ServoSlider("servo1", "out1");
+var servo2 = new ServoSlider("servo2", "out2");
+var kp = new ServoSlider("kp", "kp_out");
+var ki = new ServoSlider("ki", "ki_out");
+var kd = new ServoSlider("kd", "kd_out");
+var line1 = new LineState("line1");
+var line2 = new LineState("line2");
+var line3 = new LineState("line3");
+var line4 = new LineState("line4");
+var distances_out = document.getElementById("distances_out");
 
 startSendingQueries(100);

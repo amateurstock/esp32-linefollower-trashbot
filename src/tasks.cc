@@ -209,7 +209,9 @@ void update_motors(void *params) {
     for (;;) {
 #ifdef MOTORS_ON
         if (uno_serial.available()) {
-            buffer = uno_serial.readStringUntil('\n');
+            // I GUESS THE TERMINATING CHARACTER IS NOW FUCKING 'x'
+            // BECAUSE FOR SOME REASON \n IS NO LONGER VALID FFS ARDUINO
+            buffer = uno_serial.readStringUntil('x');
             Serial.println(buffer);
         }
         error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
@@ -220,7 +222,10 @@ void update_motors(void *params) {
                   (float)(count_highs(sensors_state.line_state) );
         delta = pid_controller.calculate(error, millis());
         delta_steering(&motors, delta);
-        sprintf(buf, "L:%d;R:%d;\n", motors.left_motors, motors.right_motors);
+        // I GUESS THE TERMINATING CHARACTER IS NOW FUCKING 'x'
+        // BECAUSE FOR SOME REASON \n IS NO LONGER VALID FFS ARDUINO
+        sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
+        //L:123;R:45;x
         uno_serial.print(buf);
         memset(buf, 0, sizeof(buf));
 
