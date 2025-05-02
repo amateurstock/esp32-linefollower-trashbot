@@ -31,7 +31,7 @@ class LineState {
 
 var baseHost;
 var intervalID = null;
-var updatesBuffer = "linestate:0;distance1:-1;distance2:-1;distance3:-1;KP:4.0;KI:0.0;KD:0.0";
+var updatesBuffer = "linestate:0;distance1:-1;distance2:-1;distance3:-1;KP:4.0;KI:0.0;KD:0.0;left:0;right:0;";
 var updates = Object.fromEntries(
     updatesBuffer.split(';')
         .filter(entry => entry)
@@ -108,6 +108,10 @@ function reportValues() {
     // Distances
     const distance_buffer = `Distance 1: ${updates.distance1} || Distance 2: ${updates.distance2} || Distance 3: ${updates.distance3}`;
     distances_out.innerHTML = distance_buffer;
+
+    // Motors
+    const motors_buffer = `Left: ${updates.left} || Right: ${updates.right}`;
+    motors_out.innerHTML = motors_buffer;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -129,5 +133,6 @@ var line2 = new LineState("line2");
 var line3 = new LineState("line3");
 var line4 = new LineState("line4");
 var distances_out = document.getElementById("distances_out");
+var motors_out = document.getElementById("motors_out");
 
 startSendingQueries(100);

@@ -41,14 +41,16 @@ esp_err_t updates_handler(httpd_req_t *req) {
 
     char buf[256] = {0};
     uint32_t len = sprintf(buf, 
-                           "linestate:%d;distance1:%d;distance2:%d;distance3:%d;KP:%f;KI:%f;KD:%f",
+                           "linestate:%d;distance1:%d;distance2:%d;distance3:%d;KP:%f;KI:%f;KD:%f;left:%d;right:%d;",
                            sensors_state.line_state,
                            sensors_state.distance_1,
                            sensors_state.distance_2,
                            sensors_state.distance_3,
                            pid_controller.get_k_p(),
                            pid_controller.get_k_i(),
-                           pid_controller.get_k_d()
+                           pid_controller.get_k_d(),
+                           motors.left_motors,
+                           motors.right_motors
                            );
 
     // Try to figure out how to send data or something idk...
