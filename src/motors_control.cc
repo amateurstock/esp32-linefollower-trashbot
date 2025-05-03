@@ -1,4 +1,5 @@
 #include "motors_control.hh"
+#include <cstdio>
 
 #define SCALE 128
 
@@ -14,4 +15,12 @@ void delta_steering(motors_t *motors, float delta) {
     int y_comp = (int)(SCALE * sin(radians));
     motors->left_motors = max(-SCALE , min(x_comp + y_comp, SCALE));
     motors->right_motors = max(-SCALE , min(x_comp - y_comp, SCALE));
+}
+
+void manual_motor_command(HardwareSerial &slave,
+                          char *buf,
+                          int16_t left, 
+                          int16_t right) {
+    sprintf(buf, "L:%d;R:%d;x", left, right);
+    slave.print(buf);
 }

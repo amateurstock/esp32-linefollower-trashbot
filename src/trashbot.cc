@@ -1,5 +1,5 @@
 #include "trashbot.hh"
-#include <cstdio>
+#include "motors_control.hh"
 
 const char *check_trash_obstacle_tag = "check_trash_obstacle";
 const char *trash_collection_tag = "trash_collection";
@@ -101,51 +101,45 @@ void obstacle_avoidance(void *params) {
             switch (state_machine) {
                 case OBS_INITIAL: {
                     state_machine = OBS_WAIT_STOP1;
-                    motors.left_motors = 0;
-                    motors.right_motors = 0;
-                    sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-                    uno_serial.print(buf);
+                    manual_motor_command(uno_serial,
+                                         buf,
+                                         0, 0);
                     break;
                 }
                 case OBS_WAIT_STOP1: {
                     vTaskDelay(pdMS_TO_TICKS(500));
 
-                    motors.left_motors = -128;
-                    motors.right_motors = 128;
-                    sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-                    uno_serial.print(buf);
+                    manual_motor_command(uno_serial,
+                                         buf,
+                                         -128, 128);
                     vTaskDelay(pdMS_TO_TICKS(250));
 
-                    motors.left_motors = 128;
-                    motors.right_motors = 128;
-                    sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-                    uno_serial.print(buf);
+                    manual_motor_command(uno_serial,
+                                         buf,
+                                         128, 128);
                     state_machine = OBS_WAIT_SWERVE_LEFT;
                     break;
                 }
                 case OBS_WAIT_SWERVE_LEFT: {
                     vTaskDelay(pdMS_TO_TICKS(1000));
 
-                    motors.left_motors = 0;
-                    motors.right_motors = 0;
+                    manual_motor_command(uno_serial,
+                                         buf,
+                                         0, 0);
                     state_machine = OBS_WAIT_STOP2;
-                    sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-                    uno_serial.print(buf);
                     break;
                 }
                 case OBS_WAIT_STOP2: {
                     vTaskDelay(pdMS_TO_TICKS(500));
 
-                    motors.left_motors = 128;
-                    motors.right_motors = -128;
-                    sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-                    uno_serial.print(buf);
+                    manual_motor_command(uno_serial,
+                                         buf,
+                                         128, -128);
                     vTaskDelay(pdMS_TO_TICKS(250));
 
-                    motors.left_motors = 128;
-                    motors.right_motors = 128;
-                    sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-                    uno_serial.print(buf);
+                    manual_motor_command(uno_serial,
+                                         buf,
+                                         128, 128);
                     state_machine = OBS_WAIT_SWERVE_RIGHT;
                     break;
                 }
@@ -154,6 +148,7 @@ void obstacle_avoidance(void *params) {
 
                     motors.left_motors = 0;
                     motors.right_motors = 0;
+
                     state_machine = OBS_WAIT_LINE;
                     break;
                 }
