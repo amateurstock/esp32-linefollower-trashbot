@@ -226,6 +226,12 @@ void update_motors(void *params) {
         // BECAUSE FOR SOME REASON \n IS NO LONGER VALID FFS ARDUINO
         sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
         //L:123;R:45;x
+        //L:255;R:255;x
+        //L:0;R:0;x
+        //L:-128;R:128;x
+        //L:128;R:-128;x
+        //L:0;R:128;x
+        //L:128;R:0;x
         uno_serial.print(buf);
         memset(buf, 0, sizeof(buf));
 

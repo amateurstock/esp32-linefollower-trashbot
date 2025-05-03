@@ -59,7 +59,7 @@ function getUpdates() {
     fetch(query)
         .then(response => response.text())
         .then(data => {
-            updates = data;
+            updatesBuffer = data;
         })
     console.log(updates);
 }
@@ -94,11 +94,20 @@ function isLineOn(val, pos) {
 }
 
 function reportValues() {
+    updates = Object.fromEntries(
+        updatesBuffer.split(';')
+            .filter(entry => entry)
+            .map(pair => {
+                const [key, value] = pair.split(':');
+                return [key, Number(value)];
+            })
+    );
+
     // Linestate
-    const l1 = isLineOn(updates.linestate, 0);
-    const l2 = isLineOn(updates.linestate, 1);
-    const l3 = isLineOn(updates.linestate, 2);
-    const l4 = isLineOn(updates.linestate, 3);
+    const l1 = isLineOn(updates.linestate, 3);
+    const l2 = isLineOn(updates.linestate, 2);
+    const l3 = isLineOn(updates.linestate, 1);
+    const l4 = isLineOn(updates.linestate, 0);
 
     line1.update(l1);
     line2.update(l2);
