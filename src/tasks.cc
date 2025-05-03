@@ -1,8 +1,9 @@
 #include "main.hh"
 #include <ESP32Servo.h>
-#include "motors_control.hh"
 #include "pid.hh"
 #include "ultrasonic.hh"
+#include "motors_control.hh"
+#include "trashbot.hh"
 #include <cstdio>
 
 constexpr float K_P = 4.0;
@@ -11,6 +12,9 @@ constexpr float K_D = 0.1;
 constexpr uint32_t WEIGHT_THRESHOLD = 2048;
 constexpr uint32_t BATTERY_THRESHOLD = 255;
 constexpr uint8_t SERVO_TIMER = 0;
+
+// idk how to extern a constexpr lmao
+uint16_t INIT_WAIT_TIME = 2000;
 
 constexpr uint32_t ARM1_INIT = 1000;
 constexpr uint32_t ARM2_INIT = 1000;
@@ -83,6 +87,8 @@ motors_t motors {
     .servo_out3 = ARM3_INIT,
     .servo_out4 = ARM4_INIT,
 };
+
+lftb_mode_t current_mode = LINE_FOLLOWER;
 
 
 
@@ -186,7 +192,7 @@ esp_err_t init_tasks() {
 
 void read_line_sensors(void *params) {
     user_logger(read_line_sensors_tag, "Waiting for the rest to init.");
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
         uint8_t b0 = digitalRead(LINE_1);
         uint8_t b1 = digitalRead(LINE_2) << 1;
@@ -204,16 +210,25 @@ void update_motors(void *params) {
     float delta = 0;
     char buf[32] = {0};
     String buffer;
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     pid_controller.set_start_time(millis());
     for (;;) {
 #ifdef MOTORS_ON
+        if (current_mode != LINE_FOLLOWER) {
+            motors.left_motors = 0;
+            motors.right_motors = 0;
+            sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
+            uno_serial.print(buf);
+            memset(buf, 0, sizeof(buf));
+            vTaskDelay(pdMS_TO_TICKS(100));
+            continue;
+        }
+
         if (uno_serial.available()) {
-            // I GUESS THE TERMINATING CHARACTER IS NOW FUCKING 'x'
-            // BECAUSE FOR SOME REASON \n IS NO LONGER VALID FFS ARDUINO
             buffer = uno_serial.readStringUntil('x');
             Serial.println(buffer);
         }
+
         error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
                   ( 2.0f * fetch_bit(sensors_state.line_state, 1)) +
                   (-2.0f * fetch_bit(sensors_state.line_state, 2)) +
@@ -222,16 +237,7 @@ void update_motors(void *params) {
                   (float)(count_highs(sensors_state.line_state) );
         delta = pid_controller.calculate(error, millis());
         delta_steering(&motors, delta);
-        // I GUESS THE TERMINATING CHARACTER IS NOW FUCKING 'x'
-        // BECAUSE FOR SOME REASON \n IS NO LONGER VALID FFS ARDUINO
         sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-        //L:123;R:45;x
-        //L:255;R:255;x
-        //L:0;R:0;x
-        //L:-128;R:128;x
-        //L:128;R:-128;x
-        //L:0;R:128;x
-        //L:128;R:0;x
         uno_serial.print(buf);
         memset(buf, 0, sizeof(buf));
 
@@ -245,7 +251,7 @@ void get_distances(void *params) {
     setup_ultrasonic_pins(ultrasonic1);
     setup_ultrasonic_pins(ultrasonic2);
     setup_ultrasonic_pins(ultrasonic3);
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
 #ifdef ULTRASONIC_ON
         sensors_state.distance_3 = pull_ultrasonic(ultrasonic3);
@@ -265,7 +271,7 @@ void get_distances(void *params) {
 
 void get_analogs(void *params) {
     user_logger(get_analogs_tag, "Waiting for the rest to init.");
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
 #ifndef WIFI_DBG
         sensors_state.VB_out = analogRead(VB_PIN);
@@ -290,7 +296,7 @@ void update_servos(void *param) {
     servo2.setPeriodHertz(50); servo2.attach(ARM_2);
     servo3.setPeriodHertz(50); servo3.attach(ARM_3);
     servo4.setPeriodHertz(50); servo4.attach(ARM_4);
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
         servo1.writeMicroseconds(motors.servo_out1);
         servo2.writeMicroseconds(motors.servo_out2);
@@ -303,7 +309,7 @@ void update_servos(void *param) {
 #ifdef PRINT_DBG
 void print_debug(void *param) {
     user_logger(print_debug_tag, "Waiting for the rest to init.");
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
         Serial.printf("<%d> || ", millis());
         Serial.printf("line_state = %d || ", sensors_state.line_state);
