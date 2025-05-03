@@ -11,8 +11,8 @@ extern lftb_mode_t current_mode;
 extern HardwareSerial uno_serial;
 extern uint16_t INIT_WAIT_TIME;
 
-constexpr uint8_t TRASH_THRESHOLD = 28;
-constexpr uint8_t OBSTACLE_THRESHOLD = 40;
+constexpr uint8_t TRASH_THRESHOLD = 20;
+constexpr uint8_t OBSTACLE_THRESHOLD = 32;
 constexpr uint8_t AVOIDANCE_TOLERANCE = 4;
 
 TaskHandle_t check_trash_obstacle_t = NULL;
@@ -51,7 +51,7 @@ void trash_collection(void *params) {
                     break;
                 }
                 case TRASH_WAIT_STOP: {
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    vTaskDelay(pdMS_TO_TICKS(1000));
                     motors.servo_out1 = 0;
                     motors.servo_out2 = 135;
                     motors.servo_out3 = 45;
@@ -60,7 +60,7 @@ void trash_collection(void *params) {
                     break;
                 }
                 case TRASH_WAIT_DOWN: {
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    vTaskDelay(pdMS_TO_TICKS(1500));
                     motors.servo_out2 = 75;
                     motors.servo_out3 = 115;
                     state_machine = TRASH_WAIT_PICK;
