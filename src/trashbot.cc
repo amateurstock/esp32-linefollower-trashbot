@@ -15,6 +15,10 @@ constexpr uint8_t TRASH_THRESHOLD = 28;
 constexpr uint8_t OBSTACLE_THRESHOLD = 40;
 constexpr uint8_t AVOIDANCE_TOLERANCE = 4;
 
+TaskHandle_t check_trash_obstacle_t = NULL;
+TaskHandle_t trash_collection_t = NULL;
+TaskHandle_t obstacle_avoidance_t = NULL;
+
 void check_trash_obstacle(void *params) {
     user_logger(check_trash_obstacle_tag, "Waiting for the rest to init.");
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));

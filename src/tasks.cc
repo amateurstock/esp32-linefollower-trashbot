@@ -27,6 +27,9 @@ TaskHandle_t update_motors_t = NULL;
 TaskHandle_t get_distances_t = NULL;
 TaskHandle_t get_analogs_t = NULL;
 TaskHandle_t update_servos_t = NULL;
+extern TaskHandle_t check_trash_obstacle_t;
+extern TaskHandle_t trash_collection_t;
+extern TaskHandle_t obstacle_avoidance_t;
 
 #ifdef PRINT_DBG
 TaskHandle_t print_debug_t = NULL;
@@ -187,6 +190,73 @@ esp_err_t init_tasks() {
     }
 #endif
 
+#ifdef COLLECTION_ON
+#ifndef CHECKER_FUNC
+#define CHECKER_FUNC
+    user_logger(TAG, "Initializing check_trash_obstacle");
+    xTaskCreate(
+        check_trash_obstacle,
+        "check_trash_obstacle task",
+        8192,
+        NULL,
+        5,
+        &check_trash_obstacle_t
+    );
+    if (check_trash_obstacle_t == NULL) {
+        user_logger("check_trash_obstacle", "Failed to create task...");
+        ret = ESP_FAIL;
+    }
+#endif
+
+    user_logger(TAG, "Initializing trash_collection");
+    xTaskCreate(
+        trash_collection,
+        "trash_collection task",
+        8192,
+        NULL,
+        5,
+        &trash_collection_t
+    );
+    if (trash_collection_t == NULL) {
+        user_logger("trash_collection", "Failed to create task...");
+        ret = ESP_FAIL;
+    }
+#endif
+
+#ifdef AVOIDANCE_ON
+#ifndef CHECKER_FUNC
+#define CHECKER_FUNC
+    user_logger(TAG, "Initializing check_trash_obstacle");
+    xTaskCreate(
+        check_trash_obstacle,
+        "check_trash_obstacle task",
+        8192,
+        NULL,
+        5,
+        &check_trash_obstacle_t
+    );
+    if (check_trash_obstacle_t == NULL) {
+        user_logger("check_trash_obstacle", "Failed to create task...");
+        ret = ESP_FAIL;
+    }
+#endif
+
+    user_logger(TAG, "Initializing obstacle_avoidance");
+    xTaskCreate(
+        obstacle_avoidance,
+        "obstacle_avoidance task",
+        8192,
+        NULL,
+        5,
+        &obstacle_avoidance_t
+    );
+    if (obstacle_avoidance_t == NULL) {
+        user_logger("obstacle_avoidance", "Failed to create task...");
+        ret = ESP_FAIL;
+    }
+#endif
+
+
     return ret;
 }
 
@@ -241,7 +311,7 @@ void update_motors(void *params) {
         uno_serial.print(buf);
         memset(buf, 0, sizeof(buf));
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(20));
 #endif
     }
 }

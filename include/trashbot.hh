@@ -32,6 +32,8 @@ typedef enum {
 } obstacle_fsm_t;
 
 void check_trash_obstacle(void *params);
+void trash_collection(void *params);
+void obstacle_avoidance(void *params);
 
 // Miscellaneous
 bool is_within_limits(uint32_t test_num,
