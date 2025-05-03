@@ -16,10 +16,10 @@ constexpr uint8_t SERVO_TIMER = 0;
 // idk how to extern a constexpr lmao
 uint16_t INIT_WAIT_TIME = 2000;
 
-constexpr uint32_t ARM1_INIT = 1000;
-constexpr uint32_t ARM2_INIT = 1000;
-constexpr uint32_t ARM3_INIT = 1000;
-constexpr uint32_t ARM4_INIT = 1000;
+constexpr uint32_t ARM1_INIT = 90;
+constexpr uint32_t ARM2_INIT = 90;
+constexpr uint32_t ARM3_INIT = 90;
+constexpr uint32_t ARM4_INIT = 90;
 
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
@@ -292,16 +292,16 @@ void get_analogs(void *params) {
 void update_servos(void *param) {
     user_logger(update_servos_tag, "Waiting for the rest to init.");
     ESP32PWM::allocateTimer(SERVO_TIMER);
-    servo1.setPeriodHertz(50); servo1.attach(ARM_1);
-    servo2.setPeriodHertz(50); servo2.attach(ARM_2);
-    servo3.setPeriodHertz(50); servo3.attach(ARM_3);
-    servo4.setPeriodHertz(50); servo4.attach(ARM_4);
+    servo1.setPeriodHertz(50); servo1.attach(ARM_1, 500, 2500);
+    servo2.setPeriodHertz(50); servo2.attach(ARM_2, 500, 2500);
+    servo3.setPeriodHertz(50); servo3.attach(ARM_3, 500, 2500);
+    servo4.setPeriodHertz(50); servo4.attach(ARM_4, 500, 2500);
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
-        servo1.writeMicroseconds(motors.servo_out1);
-        servo2.writeMicroseconds(motors.servo_out2);
-        servo3.writeMicroseconds(motors.servo_out3);
-        servo4.writeMicroseconds(motors.servo_out4);
+        servo1.write(motors.servo_out1);
+        servo2.write(motors.servo_out2);
+        servo3.write(motors.servo_out3);
+        servo4.write(motors.servo_out4);
         vTaskDelay(pdMS_TO_TICKS(8));
     }
 }

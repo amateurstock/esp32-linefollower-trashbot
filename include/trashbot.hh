@@ -23,6 +23,12 @@ typedef enum {
 } trashbot_fsm_t;
 
 typedef enum {
+    OBS_INITIAL,
+    OBS_WAIT_STOP1,
+    OBS_WAIT_SWERVE_LEFT,
+    OBS_WAIT_STOP2,
+    OBS_WAIT_SWERVE_RIGHT,
+    OBS_WAIT_LINE
 } obstacle_fsm_t;
 
 void check_trash_obstacle(void *params);

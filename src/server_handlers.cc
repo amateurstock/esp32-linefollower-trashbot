@@ -89,10 +89,10 @@ esp_err_t servos_handler(httpd_req_t *req) {
 
     free(buf);
 
-    motors.servo_out1 = map(atoi(s1), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
-    motors.servo_out2 = map(atoi(s2), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
-    motors.servo_out3 = map(atoi(s3), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
-    motors.servo_out4 = map(atoi(s4), MIN_ANGLE, MAX_ANGLE, MIN_US, MAX_US);
+    motors.servo_out1 = atoi(s1);
+    motors.servo_out2 = atoi(s2);
+    motors.servo_out3 = atoi(s3);
+    motors.servo_out4 = atoi(s4);
     pid_controller.set_pid_values(atof(kp), atof(ki), atof(kd));
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
