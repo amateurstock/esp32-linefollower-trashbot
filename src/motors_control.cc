@@ -23,6 +23,14 @@ void delta_steering(motors_t *motors, float delta) {
     motors->right_motors = max(-SCALE , min(x_comp - y_comp, SCALE));
 }
 
+void manual_motor_command(HardwareSerial &slave,
+                          char *buf,
+                          int16_t left, 
+                          int16_t right) {
+    sprintf(buf, "L:%d;R:%d;x", left, right);
+    slave.print(buf);
+}
+
 #else
 
 void delta_steering(motors_t *motors, float delta) {
@@ -31,7 +39,7 @@ void delta_steering(motors_t *motors, float delta) {
         motors->right_motors = SCALE;
         return;
     }
-    if (delta < 1.0) {
+    if (delta < -1.0) {
         motors->left_motors = 0 - (SCALE + STEERING_ASSIST);
         motors->right_motors = 0 + (SCALE + STEERING_ASSIST);
     } else if (delta > 1.0) {
@@ -40,12 +48,24 @@ void delta_steering(motors_t *motors, float delta) {
     }
 }
 
-#endif
-
 void manual_motor_command(HardwareSerial &slave,
                           char *buf,
-                          int16_t left, 
+                          int16_t left,
                           int16_t right) {
-    sprintf(buf, "L:%d;R:%d;x", left, right);
-    slave.print(buf);
+    if (left < right) {
+        sprintf(buf, "L:%d;R:%d;x", 
+                0 - (SCALE + STEERING_ASSIST), 
+                0 + (SCALE + STEERING_ASSIST)
+                );
+    } else if (right < left) {
+        sprintf(buf, "L:%d;R:%d;x", 
+                0 + (SCALE + STEERING_ASSIST), 
+                0 - (SCALE + STEERING_ASSIST)
+                );
+    } else {
+        sprintf(buf, "L:%d;R:%d;x", SCALE, SCALE);
+    }
 }
+
+#endif
+

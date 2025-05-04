@@ -21,14 +21,20 @@ TaskHandle_t obstacle_avoidance_t = NULL;
 
 void check_trash_obstacle(void *params) {
     user_logger(check_trash_obstacle_tag, "Waiting for the rest to init.");
+    uint32_t &sonar1 = sensors_state.distance_1;
+    uint32_t &sonar2 = sensors_state.distance_2;
+    uint32_t &sonar3 = sensors_state.distance_3;
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
         if (current_mode == LINE_FOLLOWER) {
-            if (sensors_state.distance_1 <= TRASH_THRESHOLD || 
-                sensors_state.distance_2 <= TRASH_THRESHOLD) {
+            if ((sonar1 <= TRASH_THRESHOLD || 
+                sonar2 <= TRASH_THRESHOLD) && 
+                !is_within_limits(sonar3, 
+                                  OBSTACLE_AVOIDANCE, 
+                                  AVOIDANCE_TOLERANCE)) {
                 current_mode = TRASH_COLLECTION;
             }
-            if (is_within_limits(sensors_state.distance_3,
+            if (is_within_limits(sonar3,
                                  OBSTACLE_THRESHOLD,
                                  AVOIDANCE_TOLERANCE)) {
                 current_mode = OBSTACLE_AVOIDANCE;
@@ -158,6 +164,8 @@ void obstacle_avoidance(void *params) {
                 }
                 case OBS_WAIT_LINE: {
                     if (sensors_state.line_state) {
+                        state_machine = OBS_INITIAL;
+                        current_mode = LINE_FOLLOWER;
                     }
                     break;
                 }
