@@ -48,9 +48,13 @@ void check_trash_obstacle(void *params) {
 void trash_collection(void *params) {
     user_logger(trash_collection_tag, "Waiting for the rest to init.");
     trashbot_fsm_t state_machine = TRASH_INITIAL;
+    char buf[32];
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
         if (current_mode == TRASH_COLLECTION) {
+            manual_motor_command(uno_serial,
+                                 buf,
+                                 0, 0);
             switch (state_machine) {
                 case TRASH_INITIAL: {
                     state_machine = TRASH_WAIT_STOP;

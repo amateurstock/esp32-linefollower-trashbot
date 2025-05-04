@@ -5,9 +5,9 @@ extern sensors_t sensors_state;
 
 #define SCALE 120
 #define STEERING_ASSIST 120
-#define test
+#define SIMPLE_STEERING
 
-#ifndef test
+#ifndef SIMPLE_STEERING
 
 void delta_steering(motors_t *motors, float delta) {
     float degrees = 7.5f * delta;
@@ -62,6 +62,8 @@ void manual_motor_command(HardwareSerial &slave,
                 0 + (SCALE + STEERING_ASSIST), 
                 0 - (SCALE + STEERING_ASSIST)
                 );
+    } else if ((left == 0) && (right == 0)){
+        sprintf(buf, "L:%d;R:%d;x", 0, 0);
     } else {
         sprintf(buf, "L:%d;R:%d;x", SCALE, SCALE);
     }

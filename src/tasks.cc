@@ -16,10 +16,10 @@ constexpr uint8_t SERVO_TIMER = 0;
 // idk how to extern a constexpr lmao
 uint16_t INIT_WAIT_TIME = 2000;
 
-constexpr uint32_t ARM1_INIT = 90;
-constexpr uint32_t ARM2_INIT = 90;
-constexpr uint32_t ARM3_INIT = 90;
-constexpr uint32_t ARM4_INIT = 90;
+constexpr uint32_t ARM1_INIT = 75;
+constexpr uint32_t ARM2_INIT = 135;
+constexpr uint32_t ARM3_INIT = 45;
+constexpr uint32_t ARM4_INIT = 105;
 
 // RTOS task handles
 TaskHandle_t read_line_sensors_t = NULL;
