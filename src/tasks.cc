@@ -6,7 +6,7 @@
 #include "trashbot.hh"
 #include <cstdio>
 
-constexpr float K_P = 4.0;
+constexpr float K_P = 8.0;
 constexpr float K_I = 0.0;
 constexpr float K_D = 0.1;
 constexpr uint32_t WEIGHT_THRESHOLD = 2048;

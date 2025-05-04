@@ -1,7 +1,13 @@
 #include "motors_control.hh"
 #include <cstdio>
 
-#define SCALE 128
+extern sensors_t sensors_state;
+
+#define SCALE 120
+#define STEERING_ASSIST 70
+#define test
+
+#ifndef test
 
 void delta_steering(motors_t *motors, float delta) {
     float degrees = 7.5f * delta;
@@ -16,6 +22,25 @@ void delta_steering(motors_t *motors, float delta) {
     motors->left_motors = max(-SCALE , min(x_comp + y_comp, SCALE));
     motors->right_motors = max(-SCALE , min(x_comp - y_comp, SCALE));
 }
+
+#else
+
+void delta_steering(motors_t *motors, float delta) {
+    if (!sensors_state.line_state) {
+        motors->left_motors = SCALE;
+        motors->right_motors = SCALE;
+        return;
+    }
+    if (delta < 1.0) {
+        motors->left_motors = 0 - (SCALE + STEERING_ASSIST);
+        motors->right_motors = 0 + (SCALE + STEERING_ASSIST);
+    } else if (delta > 1.0) {
+        motors->left_motors = 0 + (SCALE + STEERING_ASSIST);
+        motors->right_motors = 0 - (SCALE + STEERING_ASSIST);
+    }
+}
+
+#endif
 
 void manual_motor_command(HardwareSerial &slave,
                           char *buf,
