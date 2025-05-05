@@ -71,8 +71,8 @@ void trash_collection(void *params) {
                 }
                 case TRASH_WAIT_DOWN: {
                     vTaskDelay(pdMS_TO_TICKS(1500));
-                    motors.servo_out2 = 75;
-                    motors.servo_out3 = 115;
+                    motors.servo_out2 = 45;
+                    motors.servo_out3 = 135;
                     state_machine = TRASH_WAIT_PICK;
                     break;
                 }
