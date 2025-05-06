@@ -162,6 +162,7 @@ esp_err_t init_tasks() {
         ret = ESP_FAIL;
     }
 
+#ifdef SERVOS_ON
     user_logger(TAG, "Initializing update_servos");
     xTaskCreate(
         update_servos,
@@ -175,6 +176,7 @@ esp_err_t init_tasks() {
         user_logger(update_servos_tag, "Failed to create task...");
         ret = ESP_FAIL;
     }
+#endif
 
 #ifdef PRINT_DBG
     user_logger(TAG, "Initializing print_debug");

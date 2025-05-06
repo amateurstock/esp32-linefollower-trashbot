@@ -27,6 +27,7 @@ void check_trash_obstacle(void *params) {
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
         if (current_mode == LINE_FOLLOWER) {
+#ifdef COLLECTION_ON
             if ((sonar1 <= TRASH_THRESHOLD || 
                 sonar2 <= TRASH_THRESHOLD) && 
                 !is_within_limits(sonar3, 
@@ -34,9 +35,13 @@ void check_trash_obstacle(void *params) {
                                   AVOIDANCE_TOLERANCE)) {
                 current_mode = TRASH_COLLECTION;
             }
+#endif
+
+#ifdef AVOIDANCE_ON
             if (sonar3 <= OBSTACLE_THRESHOLD) {
                 current_mode = OBSTACLE_AVOIDANCE;
             }
+#endif
         }
 
         vTaskDelay(pdMS_TO_TICKS(10));
