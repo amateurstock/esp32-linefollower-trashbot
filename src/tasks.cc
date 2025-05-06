@@ -15,6 +15,7 @@ constexpr uint8_t SERVO_TIMER = 0;
 
 // idk how to extern a constexpr lmao
 uint16_t INIT_WAIT_TIME = 2000;
+char serial_buf[32] = {0};
 
 constexpr uint32_t ARM1_INIT = 75;
 constexpr uint32_t ARM2_INIT = 135;
@@ -71,6 +72,7 @@ Ultrasonic ultrasonic3 (
     100,
     ultrasonic3_fall
 );
+uint32_t ultrasonic4_reading = UINT32_MAX;
 
 // Typedefs
 sensors_t sensors_state{
@@ -296,7 +298,14 @@ void update_motors(void *params) {
 
         if (uno_serial.available()) {
             buffer = uno_serial.readStringUntil('x');
-            Serial.println(buffer);
+            get_key_value(
+                serial_buf,
+                buffer.c_str(),
+                'd',
+                ';',
+                2
+            );
+            ultrasonic4_reading = atoi(serial_buf);
         }
 
         error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
@@ -383,10 +392,11 @@ void print_debug(void *param) {
     for (;;) {
         Serial.printf("<%d> || ", millis());
         Serial.printf("line_state = %d || ", sensors_state.line_state);
-        Serial.printf("distances = %d, %d, %d\n",
+        Serial.printf("distances = %d, %d, %d,\n",
                       sensors_state.distance_1,
                       sensors_state.distance_2,
                       sensors_state.distance_3);
+        Serial.printf("%s\n", serial_buf);
         Serial.printf("motors = %d, %d\n\n", motors.left_motors, motors.right_motors);
 
         vTaskDelay(pdMS_TO_TICKS(20));
@@ -463,4 +473,31 @@ void stop_operations() {
     vTaskSuspendAll();
 
     for (;;) { }
+}
+
+void get_key_value(
+    char *buf,
+    const char *target,
+    char query,
+    char terminator,
+    uint32_t offset
+) {
+    const char *p = strchr(target, query) + offset;
+    if (!p) {
+        buf[0] = '\0';
+        return;
+    }
+
+    const char *end = strchr(p, terminator);
+    if (!end) {
+        buf[0] = '\0';
+        return;
+    }
+
+    uint32_t index = 0;
+    while (p != end) {
+        buf[index] = *p;
+        index += 1; p += 1;
+    }
+    buf[index] = '\0';
 }

@@ -1,6 +1,7 @@
 #include "main.hh"
 #include "server_handlers.hh"
 #include "pid.hh"
+#include "trashbot.hh"
 
 extern const char *root_dir;
 extern const char *html_path;
@@ -8,6 +9,8 @@ extern const char *js_path;
 extern sensors_t sensors_state;
 extern motors_t motors;
 extern PID pid_controller;
+extern uint32_t ultrasonic4_reading;
+extern lftb_mode_t current_mode;
 
 constexpr uint16_t MIN_ANGLE = 0;
 constexpr uint16_t MAX_ANGLE = 180;
@@ -41,7 +44,7 @@ esp_err_t updates_handler(httpd_req_t *req) {
 
     char buf[256] = {0};
     uint32_t len = sprintf(buf, 
-                           "linestate:%d;distance1:%d;distance2:%d;distance3:%d;KP:%f;KI:%f;KD:%f;left:%d;right:%d;",
+                           "linestate:%d;distance1:%d;distance2:%d;distance3:%d;KP:%f;KI:%f;KD:%f;left:%d;right:%d;distance4:%d;mode:%d",
                            sensors_state.line_state,
                            sensors_state.distance_1,
                            sensors_state.distance_2,
@@ -50,10 +53,11 @@ esp_err_t updates_handler(httpd_req_t *req) {
                            pid_controller.get_k_i(),
                            pid_controller.get_k_d(),
                            motors.left_motors,
-                           motors.right_motors
+                           motors.right_motors,
+                           ultrasonic4_reading,
+                           current_mode
                            );
 
-    // Try to figure out how to send data or something idk...
     httpd_resp_set_type(req, "text/plain");
     return httpd_resp_send(req, buf, len);
 }

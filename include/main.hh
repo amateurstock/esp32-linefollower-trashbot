@@ -14,7 +14,7 @@
 #define ULTRASONIC_ON
 #define MOTORS_ON
 #define COLLECTION_ON
-#define AVOIDANCE_ON
+//#define AVOIDANCE_ON
 //#define IS_HALTING
 
 // RTOS related
@@ -39,6 +39,13 @@ esp_err_t init_wifi();
 uint8_t fetch_bit(uint8_t val, uint8_t pos);
 uint8_t count_highs(uint8_t val);
 void stop_operations();
+void get_key_value(
+    char *buf,
+    const char *target,
+    char query,
+    char terminator,
+    uint32_t offset
+);
 
 // Typedefs
 typedef struct {

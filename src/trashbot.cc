@@ -12,7 +12,7 @@ extern HardwareSerial uno_serial;
 extern uint16_t INIT_WAIT_TIME;
 
 constexpr uint8_t TRASH_THRESHOLD = 20;
-constexpr uint8_t OBSTACLE_THRESHOLD = 32;
+constexpr uint8_t OBSTACLE_THRESHOLD = 50;
 constexpr uint8_t AVOIDANCE_TOLERANCE = 4;
 
 TaskHandle_t check_trash_obstacle_t = NULL;
@@ -34,9 +34,7 @@ void check_trash_obstacle(void *params) {
                                   AVOIDANCE_TOLERANCE)) {
                 current_mode = TRASH_COLLECTION;
             }
-            if (is_within_limits(sonar3,
-                                 OBSTACLE_THRESHOLD,
-                                 AVOIDANCE_TOLERANCE)) {
+            if (sonar3 <= OBSTACLE_THRESHOLD) {
                 current_mode = OBSTACLE_AVOIDANCE;
             }
         }

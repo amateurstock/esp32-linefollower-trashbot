@@ -31,7 +31,7 @@ class LineState {
 
 var baseHost;
 var intervalID = null;
-var updatesBuffer = "linestate:0;distance1:-1;distance2:-1;distance3:-1;KP:4.0;KI:0.0;KD:0.0;left:0;right:0;";
+var updatesBuffer = "linestate:0;distance1:-1;distance2:-1;distance3:-1;KP:4.0;KI:0.0;KD:0.0;left:0;right:0;distance4:-1;mode:0";
 var updates = Object.fromEntries(
     updatesBuffer.split(';')
         .filter(entry => entry)
@@ -115,7 +115,7 @@ function reportValues() {
     line4.update(l4);
 
     // Distances
-    const distance_buffer = `Distance 1: ${updates.distance1} || Distance 2: ${updates.distance2} || Distance 3: ${updates.distance3}`;
+    const distance_buffer = `Distance 1: ${updates.distance1} || Distance 2: ${updates.distance2} || Distance 3: ${updates.distance3} || Distance 4: ${updates.distance4} || Mode: ${updates.mode}`;
     distances_out.innerHTML = distance_buffer;
 
     // Motors
