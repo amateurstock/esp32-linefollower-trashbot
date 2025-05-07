@@ -3,12 +3,15 @@
 
 extern sensors_t sensors_state;
 
-#define SCALE 100
-#define STEERING_ASSIST 140
-#define SIMPLE_STEERING
+#define SCALE 80
+#define STEERING_ASSIST 170
+//#define SIMPLE_STEERING
+#define BETTER_STEERING
+//#define PID_STEERING
 
-#ifndef SIMPLE_STEERING
+//#define PROPER_MANUAL
 
+#ifdef PID_STEERING
 void delta_steering(motors_t *motors, float delta) {
     float degrees = 7.5f * delta;
 
@@ -23,16 +26,9 @@ void delta_steering(motors_t *motors, float delta) {
     motors->right_motors = max(-SCALE , min(x_comp - y_comp, SCALE));
 }
 
-void manual_motor_command(HardwareSerial &slave,
-                          char *buf,
-                          int16_t left, 
-                          int16_t right) {
-    sprintf(buf, "L:%d;R:%d;x", left, right);
-    slave.print(buf);
-}
+#endif
 
-#else
-
+#ifdef SIMPLE_STEERING
 void delta_steering(motors_t *motors, float delta) {
     if (!sensors_state.line_state) {
         motors->left_motors = SCALE;
@@ -47,6 +43,71 @@ void delta_steering(motors_t *motors, float delta) {
         motors->right_motors = 0 - (SCALE + STEERING_ASSIST);
     }
 }
+#endif
+
+#ifdef BETTER_STEERING
+
+void delta_steering(motors_t *motors, float delta) {
+    switch (sensors_state.line_state) {
+
+        case 0b0001: {
+            motors->left_motors = -SCALE - STEERING_ASSIST;
+            motors->right_motors = SCALE + STEERING_ASSIST;
+            break;
+        }
+
+        case 0b0011: {
+            motors->left_motors = -STEERING_ASSIST;
+            motors->right_motors = SCALE + STEERING_ASSIST;
+            break;
+        }
+
+        case 0b0010: {
+            motors->left_motors = 0;
+            motors->right_motors = SCALE + STEERING_ASSIST;
+            break;
+        }
+
+        case 0b0100: {
+            motors->left_motors = SCALE + STEERING_ASSIST;
+            motors->right_motors = 0;
+            break;
+        }
+        
+        case 0b1100: {
+            motors->left_motors = SCALE + STEERING_ASSIST;
+            motors->right_motors = -STEERING_ASSIST;
+            break;
+        }
+
+        case 0b1000: {
+            motors->left_motors = SCALE + STEERING_ASSIST;
+            motors->right_motors = -SCALE - STEERING_ASSIST;
+            break;
+        }
+
+        default: {
+            motors->left_motors = SCALE;
+            motors->right_motors = SCALE;
+            break;
+        }
+
+    }
+}
+
+#endif
+
+#ifdef PROPER_MANUAL
+
+void manual_motor_command(HardwareSerial &slave,
+                          char *buf,
+                          int16_t left, 
+                          int16_t right) {
+    sprintf(buf, "L:%d;R:%d;x", left, right);
+    slave.print(buf);
+}
+
+#else
 
 void manual_motor_command(HardwareSerial &slave,
                           char *buf,
@@ -70,4 +131,3 @@ void manual_motor_command(HardwareSerial &slave,
 }
 
 #endif
-
