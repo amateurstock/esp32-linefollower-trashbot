@@ -288,41 +288,54 @@ void update_motors(void *params) {
     pid_controller.set_start_time(millis());
     for (;;) {
 #ifdef MOTORS_ON
-        if (current_mode != LINE_FOLLOWER) {
-            motors.left_motors = 0;
-            motors.right_motors = 0;
-            sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-            uno_serial.print(buf);
-            memset(buf, 0, sizeof(buf));
-            vTaskDelay(pdMS_TO_TICKS(100));
-            continue;
+        switch (current_mode) {
+            case LINE_FOLLOWER: {
+                if (uno_serial.available()) {
+                    buffer = uno_serial.readStringUntil('x');
+                    get_key_value(
+                        serial_buf,
+                        buffer.c_str(),
+                        'd',
+                        ';',
+                        2
+                    );
+                    ultrasonic4_reading = atoi(serial_buf);
+                }
+
+                error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
+                    ( 2.0f * fetch_bit(sensors_state.line_state, 1)) +
+                    (-2.0f * fetch_bit(sensors_state.line_state, 2)) +
+                    (-6.0f * fetch_bit(sensors_state.line_state, 3)))
+                    /
+                    (float)(count_highs(sensors_state.line_state) );
+                delta = pid_controller.calculate(error, millis());
+                delta_steering(&motors, delta);
+                sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
+                uno_serial.print(buf);
+                memset(buf, 0, sizeof(buf));
+
+                vTaskDelay(pdMS_TO_TICKS(20));
+                break;
+            }
+
+            case TRASH_COLLECTION: {
+                motors.left_motors = 0;
+                motors.right_motors = 0;
+                sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
+                uno_serial.print(buf);
+                memset(buf, 0, sizeof(buf));
+                vTaskDelay(pdMS_TO_TICKS(100));
+                continue;
+                break;
+            }
+
+            case OBSTACLE_AVOIDANCE: {
+                vTaskDelay(pdMS_TO_TICKS(100));
+                break;
+            }
+
         }
 
-        if (uno_serial.available()) {
-            buffer = uno_serial.readStringUntil('x');
-            get_key_value(
-                serial_buf,
-                buffer.c_str(),
-                'd',
-                ';',
-                2
-            );
-            ultrasonic4_reading = atoi(serial_buf);
-        }
-
-        error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
-                  ( 2.0f * fetch_bit(sensors_state.line_state, 1)) +
-                  (-2.0f * fetch_bit(sensors_state.line_state, 2)) +
-                  (-6.0f * fetch_bit(sensors_state.line_state, 3)))
-                  /
-                  (float)(count_highs(sensors_state.line_state) );
-        delta = pid_controller.calculate(error, millis());
-        delta_steering(&motors, delta);
-        sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
-        uno_serial.print(buf);
-        memset(buf, 0, sizeof(buf));
-
-        vTaskDelay(pdMS_TO_TICKS(20));
 #endif
     }
 }

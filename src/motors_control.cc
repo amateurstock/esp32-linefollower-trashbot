@@ -128,6 +128,8 @@ void manual_motor_command(HardwareSerial &slave,
     } else {
         sprintf(buf, "L:%d;R:%d;x", SCALE, SCALE);
     }
+
+    slave.print(buf);
 }
 
 #endif
