@@ -15,6 +15,7 @@ typedef enum {
 
 typedef enum {
     TRASH_INITIAL,
+    TRASH_ALIGN,
     TRASH_WAIT_STOP,
     TRASH_WAIT_DOWN,
     TRASH_WAIT_PICK,

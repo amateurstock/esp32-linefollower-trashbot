@@ -11,8 +11,10 @@ extern lftb_mode_t current_mode;
 extern HardwareSerial uno_serial;
 extern uint16_t INIT_WAIT_TIME;
 
-constexpr uint8_t TRASH_THRESHOLD = 20;
-constexpr uint8_t OBSTACLE_THRESHOLD = 50;
+constexpr uint8_t TRASH_THRESHOLD = 25;
+constexpr uint8_t TRASH_MEDIAN = 22;
+constexpr uint8_t COLLECTION_THRESHOLD = 3;
+constexpr uint8_t OBSTACLE_THRESHOLD = 45;
 constexpr uint8_t AVOIDANCE_TOLERANCE = 4;
 
 TaskHandle_t check_trash_obstacle_t = NULL;
@@ -51,16 +53,32 @@ void check_trash_obstacle(void *params) {
 void trash_collection(void *params) {
     user_logger(trash_collection_tag, "Waiting for the rest to init.");
     trashbot_fsm_t state_machine = TRASH_INITIAL;
+    constexpr uint8_t LOWER = TRASH_MEDIAN - COLLECTION_THRESHOLD;
+    constexpr uint8_t UPPER = TRASH_MEDIAN + COLLECTION_THRESHOLD;
     char buf[32];
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
         if (current_mode == TRASH_COLLECTION) {
-            manual_motor_command(uno_serial,
-                                 buf,
-                                 0, 0);
+            manual_motor_command(uno_serial, buf, 0, 0);
             switch (state_machine) {
                 case TRASH_INITIAL: {
-                    state_machine = TRASH_WAIT_STOP;
+                    state_machine = TRASH_ALIGN;
+                    break;
+                }
+                case TRASH_ALIGN: {
+                    if (sensors_state.distance_1 < LOWER) {
+                        manual_motor_command(uno_serial, buf, 150, 150);
+                        vTaskDelay(pdMS_TO_TICKS(100));
+                        manual_motor_command(uno_serial, buf, 0, 0);
+                        vTaskDelay(pdMS_TO_TICKS(100));
+                    } else if (sensors_state.distance_1 > UPPER) {
+                        manual_motor_command(uno_serial, buf, -150, -150);
+                        vTaskDelay(pdMS_TO_TICKS(100));
+                        manual_motor_command(uno_serial, buf, 0, 0);
+                        vTaskDelay(pdMS_TO_TICKS(100));
+                    } else {
+                        state_machine = TRASH_WAIT_STOP;
+                    }
                     break;
                 }
                 case TRASH_WAIT_STOP: {
@@ -118,45 +136,33 @@ void obstacle_avoidance(void *params) {
             switch (state_machine) {
                 case OBS_INITIAL: {
                     state_machine = OBS_WAIT_STOP1;
-                    manual_motor_command(uno_serial,
-                                         buf,
-                                         0, 0);
+                    manual_motor_command(uno_serial, buf, 0, 0);
                     break;
                 }
                 case OBS_WAIT_STOP1: {
                     vTaskDelay(pdMS_TO_TICKS(500));
 
-                    manual_motor_command(uno_serial,
-                                         buf,
-                                         -128, 128);
-                    vTaskDelay(pdMS_TO_TICKS(250));
+                    manual_motor_command(uno_serial, buf, -120, 120);
+                    vTaskDelay(pdMS_TO_TICKS(563));
 
-                    manual_motor_command(uno_serial,
-                                         buf,
-                                         128, 128);
+                    manual_motor_command(uno_serial, buf, 120, 120);
                     state_machine = OBS_WAIT_SWERVE_LEFT;
                     break;
                 }
                 case OBS_WAIT_SWERVE_LEFT: {
-                    vTaskDelay(pdMS_TO_TICKS(1000));
+                    vTaskDelay(pdMS_TO_TICKS(3000));
 
-                    manual_motor_command(uno_serial,
-                                         buf,
-                                         0, 0);
+                    manual_motor_command(uno_serial, buf, 0, 0);
                     state_machine = OBS_WAIT_STOP2;
                     break;
                 }
                 case OBS_WAIT_STOP2: {
                     vTaskDelay(pdMS_TO_TICKS(500));
 
-                    manual_motor_command(uno_serial,
-                                         buf,
-                                         128, -128);
-                    vTaskDelay(pdMS_TO_TICKS(250));
+                    manual_motor_command(uno_serial, buf, 120, -120);
+                    vTaskDelay(pdMS_TO_TICKS(563));
 
-                    manual_motor_command(uno_serial,
-                                         buf,
-                                         128, 128);
+                    manual_motor_command(uno_serial, buf, 120, 120);
                     state_machine = OBS_WAIT_SWERVE_RIGHT;
                     break;
                 }

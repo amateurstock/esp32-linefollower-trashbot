@@ -126,7 +126,7 @@ void manual_motor_command(HardwareSerial &slave,
     } else if ((left == 0) && (right == 0)){
         sprintf(buf, "L:%d;R:%d;x", 0, 0);
     } else {
-        sprintf(buf, "L:%d;R:%d;x", SCALE, SCALE);
+        sprintf(buf, "L:%d;R:%d;x", left, right);
     }
 
     slave.print(buf);
