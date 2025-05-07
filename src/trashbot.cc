@@ -14,7 +14,7 @@ extern uint16_t INIT_WAIT_TIME;
 constexpr uint8_t TRASH_THRESHOLD = 25;
 constexpr uint8_t TRASH_MEDIAN = 22;
 constexpr uint8_t COLLECTION_THRESHOLD = 3;
-constexpr uint8_t OBSTACLE_THRESHOLD = 45;
+constexpr uint8_t OBSTACLE_THRESHOLD = 55;
 constexpr uint8_t AVOIDANCE_TOLERANCE = 4;
 
 TaskHandle_t check_trash_obstacle_t = NULL;
@@ -31,10 +31,7 @@ void check_trash_obstacle(void *params) {
         if (current_mode == LINE_FOLLOWER) {
 #ifdef COLLECTION_ON
             if ((sonar1 <= TRASH_THRESHOLD || 
-                sonar2 <= TRASH_THRESHOLD) && 
-                !is_within_limits(sonar3, 
-                                  OBSTACLE_AVOIDANCE, 
-                                  AVOIDANCE_TOLERANCE)) {
+                sonar2 <= TRASH_THRESHOLD)) {
                 current_mode = TRASH_COLLECTION;
             }
 #endif
@@ -68,14 +65,14 @@ void trash_collection(void *params) {
                 case TRASH_ALIGN: {
                     if (sensors_state.distance_1 < LOWER) {
                         manual_motor_command(uno_serial, buf, 150, 150);
-                        vTaskDelay(pdMS_TO_TICKS(100));
+                        vTaskDelay(pdMS_TO_TICKS(400));
                         manual_motor_command(uno_serial, buf, 0, 0);
-                        vTaskDelay(pdMS_TO_TICKS(100));
+                        vTaskDelay(pdMS_TO_TICKS(400));
                     } else if (sensors_state.distance_1 > UPPER) {
                         manual_motor_command(uno_serial, buf, -150, -150);
-                        vTaskDelay(pdMS_TO_TICKS(100));
+                        vTaskDelay(pdMS_TO_TICKS(400));
                         manual_motor_command(uno_serial, buf, 0, 0);
-                        vTaskDelay(pdMS_TO_TICKS(100));
+                        vTaskDelay(pdMS_TO_TICKS(400));
                     } else {
                         state_machine = TRASH_WAIT_STOP;
                     }
@@ -145,12 +142,12 @@ void obstacle_avoidance(void *params) {
                     manual_motor_command(uno_serial, buf, -120, 120);
                     vTaskDelay(pdMS_TO_TICKS(563));
 
-                    manual_motor_command(uno_serial, buf, 120, 120);
+                    manual_motor_command(uno_serial, buf, 100, 100);
                     state_machine = OBS_WAIT_SWERVE_LEFT;
                     break;
                 }
                 case OBS_WAIT_SWERVE_LEFT: {
-                    vTaskDelay(pdMS_TO_TICKS(3000));
+                    vTaskDelay(pdMS_TO_TICKS(2000));
 
                     manual_motor_command(uno_serial, buf, 0, 0);
                     state_machine = OBS_WAIT_STOP2;
@@ -160,9 +157,9 @@ void obstacle_avoidance(void *params) {
                     vTaskDelay(pdMS_TO_TICKS(500));
 
                     manual_motor_command(uno_serial, buf, 120, -120);
-                    vTaskDelay(pdMS_TO_TICKS(563));
+                    vTaskDelay(pdMS_TO_TICKS(1126));
 
-                    manual_motor_command(uno_serial, buf, 120, 120);
+                    manual_motor_command(uno_serial, buf, 100, 100);
                     state_machine = OBS_WAIT_SWERVE_RIGHT;
                     break;
                 }

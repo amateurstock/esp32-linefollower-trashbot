@@ -14,7 +14,7 @@
 #define ULTRASONIC_ON
 #define MOTORS_ON
 #define SERVOS_ON
-//#define COLLECTION_ON
+#define COLLECTION_ON
 #define AVOIDANCE_ON
 //#define IS_HALTING
 
