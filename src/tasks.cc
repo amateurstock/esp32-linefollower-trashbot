@@ -286,20 +286,13 @@ void update_motors(void *params) {
     String buffer;
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     pid_controller.set_start_time(millis());
+    idle_assist(uno_serial, buf, 500);
     for (;;) {
 #ifdef MOTORS_ON
         switch (current_mode) {
             case LINE_FOLLOWER: {
                 if (uno_serial.available()) {
                     buffer = uno_serial.readStringUntil('x');
-                    get_key_value(
-                        serial_buf,
-                        buffer.c_str(),
-                        'd',
-                        ';',
-                        2
-                    );
-                    ultrasonic4_reading = atoi(serial_buf);
                 }
 
                 error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
@@ -515,4 +508,9 @@ void get_key_value(
         index += 1; p += 1;
     }
     buf[index] = '\0';
+}
+
+void idle_assist(HardwareSerial &slave, char *buf, uint32_t duration) {
+    manual_motor_command(slave, buf, 250, 250);
+    vTaskDelay(pdMS_TO_TICKS(duration));
 }

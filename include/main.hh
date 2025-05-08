@@ -47,6 +47,7 @@ void get_key_value(
     char terminator,
     uint32_t offset
 );
+void idle_assist(HardwareSerial &slave, char *buf, uint32_t duration);
 
 // Typedefs
 typedef struct {

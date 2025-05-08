@@ -114,8 +114,18 @@ function reportValues() {
     line3.update(l3);
     line4.update(l4);
 
+    var bot_mode = "";
+
+    if (updates.mode === 0) {
+        bot_mode = "LF";
+    } else if (updates.mode === 1) { 
+        bot_mode = "TC";
+    } else if (updates.mode === 2) {
+        bot_mode = "OA";
+    }
+
     // Distances
-    const distance_buffer = `Distance 1: ${updates.distance1} || Distance 2: ${updates.distance2} || Distance 3: ${updates.distance3} || Distance 4: ${updates.distance4} || Mode: ${updates.mode}`;
+    const distance_buffer = `Distance 1: ${updates.distance1} || Distance 2: ${updates.distance2} || Distance 3: ${updates.distance3} || Distance 4: ${updates.distance4} || Mode: ${bot_mode}`;
     distances_out.innerHTML = distance_buffer;
 
     // Motors

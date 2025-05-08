@@ -14,7 +14,7 @@ extern uint16_t INIT_WAIT_TIME;
 constexpr uint8_t TRASH_THRESHOLD = 25;
 constexpr uint8_t TRASH_MEDIAN = 22;
 constexpr uint8_t COLLECTION_THRESHOLD = 3;
-constexpr uint8_t OBSTACLE_THRESHOLD = 55;
+constexpr uint8_t OBSTACLE_THRESHOLD = 35;
 constexpr uint8_t AVOIDANCE_TOLERANCE = 4;
 
 TaskHandle_t check_trash_obstacle_t = NULL;
@@ -112,6 +112,7 @@ void trash_collection(void *params) {
                 }
                 case TRASH_WAIT_REST: {
                     vTaskDelay(pdMS_TO_TICKS(500));
+                    idle_assist(uno_serial, buf, 500);
                     state_machine = TRASH_INITIAL;
                     current_mode = LINE_FOLLOWER;
                     break;
