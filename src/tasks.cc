@@ -286,7 +286,7 @@ void update_motors(void *params) {
     String buffer;
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     pid_controller.set_start_time(millis());
-    idle_assist(uno_serial, buf, 500);
+    idle_assist(uno_serial, buf, 250);
     for (;;) {
 #ifdef MOTORS_ON
         switch (current_mode) {

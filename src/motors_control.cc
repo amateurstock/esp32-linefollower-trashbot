@@ -3,8 +3,8 @@
 
 extern sensors_t sensors_state;
 
-#define SCALE 100
-#define STEERING_ASSIST 150
+#define SCALE 200
+#define STEERING_ASSIST 30
 //#define SIMPLE_STEERING
 #define BETTER_STEERING
 //#define PID_STEERING
