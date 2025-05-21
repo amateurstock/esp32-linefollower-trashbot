@@ -42,10 +42,10 @@ const char *update_motors_tag = "update_motors";
 const char *get_distances_tag = "get_distances";
 const char *get_analogs_tag = "get analogs";
 const char *update_servos_tag = "update_servos";
-
 #ifdef PRINT_DBG
 const char *print_debug_tag = "print_debug";
 #endif
+const char *check_bin_tag = "check_bin";
 
 // OOP constructors
 HardwareSerial uno_serial(2);
@@ -286,15 +286,11 @@ void update_motors(void *params) {
     String buffer;
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     pid_controller.set_start_time(millis());
-    idle_assist(uno_serial, buf, 250);
+    //idle_assist(uno_serial, buf, 250);
     for (;;) {
 #ifdef MOTORS_ON
         switch (current_mode) {
             case LINE_FOLLOWER: {
-                if (uno_serial.available()) {
-                    buffer = uno_serial.readStringUntil('x');
-                }
-
                 error = ( ( 6.0f * fetch_bit(sensors_state.line_state, 0)) +
                     ( 2.0f * fetch_bit(sensors_state.line_state, 1)) +
                     (-2.0f * fetch_bit(sensors_state.line_state, 2)) +
@@ -324,6 +320,17 @@ void update_motors(void *params) {
 
             case OBSTACLE_AVOIDANCE: {
                 vTaskDelay(pdMS_TO_TICKS(100));
+                break;
+            }
+
+            case BIN_FULL: {
+                motors.left_motors = 0;
+                motors.right_motors = 0;
+                sprintf(buf, "L:%d;R:%d;x", motors.left_motors, motors.right_motors);
+                uno_serial.print(buf);
+                memset(buf, 0, sizeof(buf));
+                vTaskDelay(pdMS_TO_TICKS(100));
+                continue;
                 break;
             }
 
@@ -412,6 +419,41 @@ void print_debug(void *param) {
     }
 }
 #endif
+
+void check_bin(void *param) {
+    user_logger(check_bin_tag, "Waiting for the rest to init.");
+    uint32_t bin_buf[8] = {30, 30, 30, 30, 30, 30, 30, 30};
+    uint8_t bin_counter = 0;
+    float bin_avg = 30.0f;
+    vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
+    for (;;) {
+        if (current_mode != LINE_FOLLOWER || sensors_state.distance_3 > 30) {
+            vTaskDelay(pdMS_TO_TICKS(125));
+            continue;
+        } else {
+            bin_buf[bin_counter] = sensors_state.distance_3;
+            bin_counter = (bin_counter + 1) % 8;
+            bin_avg = (
+                (float) bin_buf[0] +
+                (float) bin_buf[1] +
+                (float) bin_buf[2] +
+                (float) bin_buf[3] +
+                (float) bin_buf[4] +
+                (float) bin_buf[5] +
+                (float) bin_buf[6] +
+                (float) bin_buf[7]
+            ) / 8;
+            if (bin_avg < 5.0f) {
+                current_mode = BIN_FULL;
+                vTaskDelay(pdMS_TO_TICKS(5));
+                continue;
+            } else {
+                vTaskDelay(pdMS_TO_TICKS(125));
+                continue;
+            }
+        }
+    }
+}
 
 
 

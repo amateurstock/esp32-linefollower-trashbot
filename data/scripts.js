@@ -122,6 +122,10 @@ function reportValues() {
         bot_mode = "TC";
     } else if (updates.mode === 2) {
         bot_mode = "OA";
+    } else if (updates.mode === 3) {
+        bot_mode = "BF";
+    } else {
+        bot_mode = "???";
     }
 
     // Distances

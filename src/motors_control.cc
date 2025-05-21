@@ -3,8 +3,8 @@
 
 extern sensors_t sensors_state;
 
-#define SCALE 200
-#define STEERING_ASSIST 30
+#define SCALE 75
+#define STEERING_ASSIST 100
 //#define SIMPLE_STEERING
 #define BETTER_STEERING
 //#define PID_STEERING
@@ -93,6 +93,11 @@ void delta_steering(motors_t *motors, float delta) {
         }
 
     }
+
+    /*
+    motors->left_motors = motors->left_motors * -1;
+    motors->right_motors = motors->right_motors * -1;
+    */
 }
 
 #endif

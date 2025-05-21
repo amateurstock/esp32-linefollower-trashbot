@@ -10,7 +10,8 @@
 typedef enum {
     LINE_FOLLOWER,
     TRASH_COLLECTION,
-    OBSTACLE_AVOIDANCE
+    OBSTACLE_AVOIDANCE,
+    BIN_FULL
 } lftb_mode_t;
 
 typedef enum {

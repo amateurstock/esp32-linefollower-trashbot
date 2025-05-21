@@ -28,16 +28,18 @@ void check_trash_obstacle(void *params) {
     uint32_t &sonar3 = sensors_state.distance_3;
     vTaskDelay(pdMS_TO_TICKS(INIT_WAIT_TIME));
     for (;;) {
-        if (current_mode == LINE_FOLLOWER) {
+        if (current_mode == BIN_FULL) {
+            vTaskDelay(pdMS_TO_TICKS(10));
+            continue;
+        } else if (current_mode == LINE_FOLLOWER) {
 #ifdef COLLECTION_ON
-            if ((sonar1 <= TRASH_THRESHOLD || 
-                sonar2 <= TRASH_THRESHOLD)) {
+            if (sonar1 <= TRASH_THRESHOLD) {
                 current_mode = TRASH_COLLECTION;
             }
 #endif
 
 #ifdef AVOIDANCE_ON
-            if (sonar3 <= OBSTACLE_THRESHOLD) {
+            if (sonar2 <= OBSTACLE_THRESHOLD) {
                 current_mode = OBSTACLE_AVOIDANCE;
             }
 #endif
@@ -60,6 +62,7 @@ void trash_collection(void *params) {
             switch (state_machine) {
                 case TRASH_INITIAL: {
                     state_machine = TRASH_ALIGN;
+                    state_machine = TRASH_WAIT_STOP;
                     break;
                 }
                 case TRASH_ALIGN: {
@@ -112,7 +115,7 @@ void trash_collection(void *params) {
                 }
                 case TRASH_WAIT_REST: {
                     vTaskDelay(pdMS_TO_TICKS(500));
-                    idle_assist(uno_serial, buf, 500);
+                    //idle_assist(uno_serial, buf, 500);
                     state_machine = TRASH_INITIAL;
                     current_mode = LINE_FOLLOWER;
                     break;
@@ -141,14 +144,14 @@ void obstacle_avoidance(void *params) {
                     vTaskDelay(pdMS_TO_TICKS(500));
 
                     manual_motor_command(uno_serial, buf, -120, 120);
-                    vTaskDelay(pdMS_TO_TICKS(563));
+                    vTaskDelay(pdMS_TO_TICKS(300));
 
                     manual_motor_command(uno_serial, buf, 100, 100);
                     state_machine = OBS_WAIT_SWERVE_LEFT;
                     break;
                 }
                 case OBS_WAIT_SWERVE_LEFT: {
-                    vTaskDelay(pdMS_TO_TICKS(2000));
+                    vTaskDelay(pdMS_TO_TICKS(3000));
 
                     manual_motor_command(uno_serial, buf, 0, 0);
                     state_machine = OBS_WAIT_STOP2;
@@ -158,7 +161,7 @@ void obstacle_avoidance(void *params) {
                     vTaskDelay(pdMS_TO_TICKS(500));
 
                     manual_motor_command(uno_serial, buf, 120, -120);
-                    vTaskDelay(pdMS_TO_TICKS(1126));
+                    vTaskDelay(pdMS_TO_TICKS(600));
 
                     manual_motor_command(uno_serial, buf, 100, 100);
                     state_machine = OBS_WAIT_SWERVE_RIGHT;

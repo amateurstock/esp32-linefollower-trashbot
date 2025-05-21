@@ -78,8 +78,8 @@ typedef struct {
 // |--- Servos
 #define ARM_1 23
 #define ARM_2 22
-#define ARM_3 21
-#define ARM_4 19
+#define ARM_3 19
+#define ARM_4 21
 
 // |--- Ultrasonic Sensors
 #define SHARED_TRIG 33
